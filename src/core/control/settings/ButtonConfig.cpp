@@ -66,6 +66,10 @@ void ButtonConfig::applyConfigToToolbarTool(ToolHandler* toolHandler) const {
     if (t->hasCapability(TOOL_CAP_LINE_STYLE) && this->strokeType != STROKE_TYPE_NONE) {
         toolHandler->setLineStyle(strokeTypeToLineStyle(this->strokeType));
     }
+    // The default tool has no fill setting: make sure a previously enabled fill does not carry over
+    if (t->hasCapability(TOOL_CAP_FILL)) {
+        toolHandler->setFillEnabled(false);
+    }
 
     // No TOOL_CAP_BLA for that
     if ((this->action == TOOL_PEN || this->action == TOOL_HIGHLIGHTER) &&
