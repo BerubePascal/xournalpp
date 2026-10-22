@@ -33,6 +33,8 @@ public:
 public:
     std::string getToolDisplayName() const override;
     void setPopoverFactory(const PopoverFactory* factory);
+    /// Keep the popover's menu button beside the icon, even in vertical toolbars (default: below in those)
+    void setPopoverButtonAlwaysBeside(bool beside);
 
 protected:
     xoj::util::WidgetSPtr createItem(bool horizontal) override;
@@ -44,6 +46,7 @@ protected:
     std::string description;
     /// @brief If set, a MenuButton is added with this popover
     const PopoverFactory* popoverFactory = nullptr;
+    bool popoverButtonAlwaysBeside = false;
     Action action;
     /// @brief If set, the action target value the button corresponds to
     xoj::util::GVariantSPtr target;

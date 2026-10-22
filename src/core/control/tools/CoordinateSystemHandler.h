@@ -27,5 +27,5 @@ public:
 private:
     auto createShape(bool isAltDown, bool isShiftDown, bool isControlDown)
             -> std::pair<std::vector<Point>, Range> override;
-    bool supportsArrowheads() const override { return true; }
+    DrawingType getArrowheadShape() const override { return DRAWING_TYPE_COORDINATE_SYSTEM; }
 };

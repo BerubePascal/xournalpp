@@ -178,8 +178,11 @@ enum class Action : size_t {
     POSITION_HIGHLIGHTING,
 
     // Arrowheads on shapes
-    TOOL_ARROWHEADS,  ///< Action whose state is the arrowhead mode ("none", "start", "end" or "both")
-    TOOL_ARROWHEADS_CYCLE,
+    // Actions whose state is the shape's arrowhead mode ("none", "start", "end" or "both")
+    TOOL_ARROWHEADS_LINE,
+    TOOL_ARROWHEADS_SPLINE,
+    TOOL_ARROWHEADS_COORDINATE_SYSTEM,
+    TOOL_ARROWHEADS_CYCLE,  ///< Cycles the arrowhead mode of the current shape
 
     // Keep this last value
     ENUMERATOR_COUNT

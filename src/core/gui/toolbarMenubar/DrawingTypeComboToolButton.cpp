@@ -1,6 +1,7 @@
 #include "DrawingTypeComboToolButton.h"
 
 #include <algorithm>  // for find_if
+#include <optional>   // for optional
 #include <utility>    // for move
 
 #include <gtk/gtk.h>
@@ -10,6 +11,8 @@
 #include "util/glib_casts.h"
 #include "util/gtk4_helper.h"  // for gtk_popover_new
 #include "util/i18n.h"
+
+#include "ArrowheadPopoverFactory.h"  // for ArrowheadPopoverFactory
 
 /// Returns a floating ref
 static GtkWidget* createPopoverEntry(const DrawingTypeComboToolButton::Entry& e) {
@@ -23,6 +26,21 @@ static GtkWidget* createPopoverEntry(const DrawingTypeComboToolButton::Entry& e)
     gtk_box_append(box, gtk_label_new(e.name.c_str()));
     gtk_widget_set_tooltip_text(entry, e.name.c_str());
     return entry;
+}
+
+/// The action holding the arrowhead mode of the shape, if it can have arrowheads
+static auto arrowheadsActionFor(DrawingTypeComboToolButton::Type t) -> std::optional<Action> {
+    using Type = DrawingTypeComboToolButton::Type;
+    switch (t) {
+        case Type::LINE:
+            return Action::TOOL_ARROWHEADS_LINE;
+        case Type::SPLINE:
+            return Action::TOOL_ARROWHEADS_SPLINE;
+        case Type::COORDINATE_SYSTEM:
+            return Action::TOOL_ARROWHEADS_COORDINATE_SYSTEM;
+        default:
+            return std::nullopt;
+    }
 }
 
 static auto makeEntries(IconNameHelper& icons, const ActionDatabase& db)
@@ -89,8 +107,28 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
         gtk_popover_set_child(data->popover, GTK_WIDGET(box));
         gtk_widget_add_css_class(GTK_WIDGET(data->popover), "toolbar");
 
-        for (const Entry& t: *this->entries) {
-            gtk_box_append(box, createPopoverEntry(t));
+        for (size_t n = 0; n < xoj::to_underlying(Type::ENUMERATOR_COUNT); n++) {
+            const Entry& t = (*this->entries)[static_cast<Type>(n)];
+            std::optional<Action> arrowheadsAction = arrowheadsActionFor(static_cast<Type>(n));
+            if (!arrowheadsAction) {
+                gtk_box_append(box, createPopoverEntry(t));
+                continue;
+            }
+            // Shapes with open ends: a ▸ on the right of the entry opens the shape's arrowhead choices
+            GtkBox* row = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
+            GtkWidget* entry = createPopoverEntry(t);
+            gtk_widget_set_hexpand(entry, true);
+            gtk_box_append(row, entry);
+
+            GtkMenuButton* arrowheadsButton = GTK_MENU_BUTTON(gtk_menu_button_new());
+            gtk_widget_set_can_focus(GTK_WIDGET(arrowheadsButton), false);  // todo(gtk4) not necessary anymore
+            gtk_widget_set_tooltip_text(GTK_WIDGET(arrowheadsButton), _("Arrowheads"));
+            gtk_menu_button_set_direction(arrowheadsButton, GTK_ARROW_RIGHT);
+            gtk_menu_button_set_popover(arrowheadsButton,
+                                        ArrowheadPopoverFactory(t.gAction, *arrowheadsAction).createPopover());
+            gtk_box_append(row, GTK_WIDGET(arrowheadsButton));
+
+            gtk_box_append(box, GTK_WIDGET(row));
         }
 
         gtk_widget_show_all(GTK_WIDGET(box));

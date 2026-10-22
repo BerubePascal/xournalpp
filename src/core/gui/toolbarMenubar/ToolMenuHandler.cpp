@@ -37,6 +37,7 @@
 #include "SeparatorItem.h"
 #include "SpacerItem.h"
 #include "StylePopoverFactory.h"     // for ToolButtonWithStylePopover
+#include "ArrowheadPopoverFactory.h"  // for ArrowheadPopoverFactory
 #include "ToolButton.h"              // for ToolButton
 #include "ToolPageLayer.h"           // for ToolPageLayer
 #include "ToolPageSpinner.h"         // for ToolPageSpinner
@@ -419,10 +420,22 @@ void ToolMenuHandler::initToolItems() {
     emplaceCustomItemTgl("DRAW_ARROW", Cat::TOOLS, Action::TOOL_DRAW_ARROW, "draw-arrow", _("Draw Arrow"));
     emplaceCustomItemTgl("DRAW_DOUBLE_ARROW", Cat::TOOLS, Action::TOOL_DRAW_DOUBLE_ARROW, "draw-double-arrow",
                          _("Draw Double Arrow"));
-    emplaceCustomItemTgl("DRAW_COORDINATE_SYSTEM", Cat::TOOLS, Action::TOOL_DRAW_COORDINATE_SYSTEM,
-                         "draw-coordinate-system", _("Draw Coordinate System"));
-    emplaceCustomItemTgl("RULER", Cat::TOOLS, Action::TOOL_DRAW_LINE, "draw-line", _("Draw Line"));
-    emplaceCustomItemTgl("DRAW_SPLINE", Cat::TOOLS, Action::TOOL_DRAW_SPLINE, "draw-spline", _("Draw Spline"));
+    // Shapes with open ends: their buttons get a drop-down menu to choose the arrowheads
+    auto emplaceShapeItemWithArrowheads = [this](const char* name, Action action, Action arrowheadsAction,
+                                                 const char* icon, std::string description) {
+        auto&& popover = this->arrowheadPopovers.emplace_back(std::make_unique<ArrowheadPopoverFactory>(
+                this->control->getActionDatabase()->getAction(action), arrowheadsAction));
+        auto&& tb = emplaceItem<ToolButton>(name, Cat::TOOLS, action, iconName(icon), description, true);
+        tb.setPopoverFactory(popover.get());
+        tb.setPopoverButtonAlwaysBeside(true);
+    };
+    emplaceShapeItemWithArrowheads("DRAW_COORDINATE_SYSTEM", Action::TOOL_DRAW_COORDINATE_SYSTEM,
+                                   Action::TOOL_ARROWHEADS_COORDINATE_SYSTEM, "draw-coordinate-system",
+                                   _("Draw Coordinate System"));
+    emplaceShapeItemWithArrowheads("RULER", Action::TOOL_DRAW_LINE, Action::TOOL_ARROWHEADS_LINE, "draw-line",
+                                   _("Draw Line"));
+    emplaceShapeItemWithArrowheads("DRAW_SPLINE", Action::TOOL_DRAW_SPLINE, Action::TOOL_ARROWHEADS_SPLINE,
+                                   "draw-spline", _("Draw Spline"));
 
     emplaceCustomItemWithTarget("SELECT_REGION", Cat::SELECTION, Action::SELECT_TOOL, TOOL_SELECT_REGION,
                                 "select-lasso", _("Select Region"));

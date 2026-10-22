@@ -1139,24 +1139,38 @@ struct ActionProperties<Action::POSITION_HIGHLIGHTING> {
     }
 };
 
-template <>
-struct ActionProperties<Action::TOOL_ARROWHEADS> {
+/// Arrowhead mode of one shape (see Arrowheads::SHAPES)
+template <DrawingType shape>
+struct ArrowheadsActionProperties {
     using state_type = const std::string&;
     using parameter_type = state_type;
     static std::string initialState(Control* ctrl) {
-        return Arrowheads::toString(ctrl->getToolHandler()->getArrowheadMode());
+        return Arrowheads::toString(ctrl->getToolHandler()->getArrowheadMode(shape));
     }
     static void callback(GSimpleAction* ga, GVariant* p, Control* ctrl) {
         g_simple_action_set_state(ga, p);
-        ctrl->getToolHandler()->setArrowheadMode(Arrowheads::fromString(g_variant_get_string(p, nullptr)));
+        ctrl->getToolHandler()->setArrowheadMode(shape, Arrowheads::fromString(g_variant_get_string(p, nullptr)));
     }
 };
 
 template <>
+struct ActionProperties<Action::TOOL_ARROWHEADS_LINE>: ArrowheadsActionProperties<DRAWING_TYPE_LINE> {};
+template <>
+struct ActionProperties<Action::TOOL_ARROWHEADS_SPLINE>: ArrowheadsActionProperties<DRAWING_TYPE_SPLINE> {};
+template <>
+struct ActionProperties<Action::TOOL_ARROWHEADS_COORDINATE_SYSTEM>:
+        ArrowheadsActionProperties<DRAWING_TYPE_COORDINATE_SYSTEM> {};
+
+template <>
 struct ActionProperties<Action::TOOL_ARROWHEADS_CYCLE> {
     static void callback(GSimpleAction*, GVariant*, Control* ctrl) {
-        ArrowheadMode mode = Arrowheads::next(ctrl->getToolHandler()->getArrowheadMode());
-        ctrl->getToolHandler()->setArrowheadMode(mode);
-        ctrl->getActionDatabase()->setActionState(Action::TOOL_ARROWHEADS, Arrowheads::toString(mode));
+        DrawingType shape = ctrl->getToolHandler()->getDrawingType();
+        auto i = Arrowheads::shapeIndex(shape);
+        if (!i) {
+            return;  // The current shape has no arrowheads
+        }
+        ArrowheadMode mode = Arrowheads::next(ctrl->getToolHandler()->getArrowheadMode(shape));
+        ctrl->getToolHandler()->setArrowheadMode(shape, mode);
+        ctrl->getActionDatabase()->setActionState(Arrowheads::SHAPES[*i].action, Arrowheads::toString(mode));
     }
 };

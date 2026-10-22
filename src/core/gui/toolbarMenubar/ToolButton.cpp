@@ -55,11 +55,13 @@ auto ToolButton::createItem(bool horizontal) -> xoj::util::WidgetSPtr {
 
         gtk_container_add(GTK_CONTAINER(it), GTK_WIDGET(box));
 
-        g_signal_connect_object(it, "toolbar-reconfigured", G_CALLBACK(+[](GtkToolItem* it, gpointer box) {
-                                    gtk_orientable_set_orientation(GTK_ORIENTABLE(box),
-                                                                   gtk_tool_item_get_orientation(it));
-                                }),
-                                box, GConnectFlags(0));
+        if (!popoverButtonAlwaysBeside) {
+            g_signal_connect_object(it, "toolbar-reconfigured", G_CALLBACK(+[](GtkToolItem* it, gpointer box) {
+                                        gtk_orientable_set_orientation(GTK_ORIENTABLE(box),
+                                                                       gtk_tool_item_get_orientation(it));
+                                    }),
+                                    box, GConnectFlags(0));
+        }
         g_signal_connect_object(it, "toolbar-reconfigured", G_CALLBACK(+[](GtkToolItem* it, gpointer btn) {
                                     const bool h = gtk_tool_item_get_orientation(it) == GTK_ORIENTATION_HORIZONTAL;
                                     gtk_menu_button_set_direction(GTK_MENU_BUTTON(btn),
@@ -109,3 +111,5 @@ auto ToolButton::getNewToolIcon() const -> GtkWidget* {
 }
 
 void ToolButton::setPopoverFactory(const PopoverFactory* factory) { popoverFactory = factory; }
+
+void ToolButton::setPopoverButtonAlwaysBeside(bool beside) { popoverButtonAlwaysBeside = beside; }

@@ -388,10 +388,11 @@ public:
     bool supportsTapFilter() const;
 
     /**
-     * Arrowheads added to the open ends of shapes (line, spline, coordinate system). Shared by all those shapes.
+     * Arrowheads added to the open ends of shapes. Each shape (line, spline, coordinate system) has its own setting;
+     * other drawing types are ignored (and never get arrowheads).
      */
-    void setArrowheadMode(ArrowheadMode mode);
-    ArrowheadMode getArrowheadMode() const;
+    void setArrowheadMode(DrawingType shape, ArrowheadMode mode);
+    ArrowheadMode getArrowheadMode(DrawingType shape) const;
 
 protected:
     void initTools();
@@ -432,7 +433,7 @@ private:
     std::unique_ptr<Tool> mouseButton5Tool;
     std::unique_ptr<Tool> touchDrawingButtonTool;
 
-    ArrowheadMode arrowheadMode = ArrowheadMode::NONE;
+    std::array<ArrowheadMode, Arrowheads::SHAPE_COUNT> arrowheadModes{};
 
     std::vector<ToolChangedCallback> toolChangeListeners;
 

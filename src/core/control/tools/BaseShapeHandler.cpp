@@ -38,8 +38,9 @@ BaseShapeHandler::~BaseShapeHandler() = default;
 
 void BaseShapeHandler::updateShape(bool isAltDown, bool isShiftDown, bool isControlDown) {
     auto [shape, rg] = this->createShape(isAltDown, isShiftDown, isControlDown);
-    if (this->supportsArrowheads()) {
-        Arrowheads::add(shape, control->getToolHandler()->getArrowheadMode(), this->stroke->getWidth());
+    ArrowheadMode arrowheads = control->getToolHandler()->getArrowheadMode(this->getArrowheadShape());
+    if (arrowheads != ArrowheadMode::NONE) {
+        Arrowheads::add(shape, arrowheads, this->stroke->getWidth());
         for (const Point& p: shape) {
             rg.addPoint(p.x, p.y);
         }

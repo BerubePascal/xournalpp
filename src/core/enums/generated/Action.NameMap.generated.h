@@ -122,5 +122,7 @@ constexpr const char* ACTION_NAMES[] = {  // Action to string conversion map
         "layer-goto-top",
         "layer-active",
         "position-highlighting",
-        "tool-arrowheads",
+        "tool-arrowheads-line",
+        "tool-arrowheads-spline",
+        "tool-arrowheads-coordinate-system",
         "tool-arrowheads-cycle"};

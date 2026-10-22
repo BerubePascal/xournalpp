@@ -50,6 +50,15 @@ auto headPoints(const Point& tip, double angle, double headLength) -> std::vecto
 }
 }  // namespace
 
+auto Arrowheads::shapeIndex(DrawingType drawingType) -> std::optional<size_t> {
+    for (size_t i = 0; i < SHAPE_COUNT; i++) {
+        if (SHAPES[i].drawingType == drawingType) {
+            return i;
+        }
+    }
+    return std::nullopt;
+}
+
 const char* Arrowheads::toString(ArrowheadMode mode) {
     switch (mode) {
         case ArrowheadMode::START:

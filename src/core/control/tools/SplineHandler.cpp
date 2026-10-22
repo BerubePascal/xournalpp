@@ -270,7 +270,7 @@ void SplineHandler::finalizeSpline() {
     }
 
     auto points = linearizeSpline(data);
-    Arrowheads::add(points, control->getToolHandler()->getArrowheadMode(), stroke->getWidth());
+    Arrowheads::add(points, control->getToolHandler()->getArrowheadMode(DRAWING_TYPE_SPLINE), stroke->getWidth());
     stroke->setPointVector(std::move(points));
     stroke->freeUnusedPointItems();
 

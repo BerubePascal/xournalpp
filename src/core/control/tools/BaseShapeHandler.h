@@ -17,7 +17,8 @@
 
 #include <gdk/gdk.h>  // for GdkEventKey
 
-#include "model/PageRef.h"  // for PageRef
+#include "control/ToolEnums.h"  // for DrawingType
+#include "model/PageRef.h"      // for PageRef
 #include "model/Point.h"    // for Point
 #include "util/Range.h"     // for Range
 
@@ -72,9 +73,10 @@ private:
     virtual std::pair<std::vector<Point>, Range> createShape(bool isAltDown, bool isShiftDown, bool isControlDown) = 0;
 
     /**
-     * @brief Whether the shape has open ends that get arrowheads (see ToolHandler::getArrowheadMode())
+     * @brief The shape whose arrowhead setting applies (see ToolHandler::getArrowheadMode()).
+     *      DRAWING_TYPE_DEFAULT for shapes without arrowheads.
      */
-    virtual bool supportsArrowheads() const { return false; }
+    virtual DrawingType getArrowheadShape() const { return DRAWING_TYPE_DEFAULT; }
 
     /**
      * @brief Update the current shape with the latest event info.
