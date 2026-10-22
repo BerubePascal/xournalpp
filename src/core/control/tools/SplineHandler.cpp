@@ -11,6 +11,8 @@
 #include <gdk/gdkkeysyms.h>  // for GDK_KEY_Escape
 
 #include "control/Control.h"                       // for Control
+#include "control/ToolHandler.h"                   // for ToolHandler
+#include "control/tools/Arrowheads.h"              // for Arrowheads
 #include "control/layer/LayerController.h"         // for LayerController
 #include "control/tools/InputHandler.h"            // for InputHandler
 #include "control/tools/SnapToGridInputHandler.h"  // for SnapToGridInputHan...
@@ -267,7 +269,9 @@ void SplineHandler::finalizeSpline() {
         return;
     }
 
-    stroke->setPointVector(linearizeSpline(data));
+    auto points = linearizeSpline(data);
+    Arrowheads::add(points, control->getToolHandler()->getArrowheadMode(), stroke->getWidth());
+    stroke->setPointVector(std::move(points));
     stroke->freeUnusedPointItems();
 
     Layer* layer = page->getSelectedLayer();

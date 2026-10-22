@@ -435,6 +435,7 @@ void ToolHandler::saveSettings() const {
     s.clear();
 
     s.setString("current", this->activeTool->getName());
+    s.setString("arrowheads", Arrowheads::toString(this->arrowheadMode));
 
     for (auto&& tool: tools) {
         SElement& st = s.child(tool->getName());
@@ -508,6 +509,11 @@ void ToolHandler::saveSettings() const {
 
 void ToolHandler::loadSettings() {
     SElement& s = settings->getCustomElement("tools");
+
+    std::string arrowheads;
+    if (s.getString("arrowheads", arrowheads)) {
+        this->arrowheadMode = Arrowheads::fromString(arrowheads);
+    }
 
     std::string selectedTool;
     if (s.getString("current", selectedTool)) {
@@ -588,6 +594,10 @@ void ToolHandler::loadSettings() {
         }
     }
 }
+
+void ToolHandler::setArrowheadMode(ArrowheadMode mode) { this->arrowheadMode = mode; }
+
+auto ToolHandler::getArrowheadMode() const -> ArrowheadMode { return this->arrowheadMode; }
 
 bool ToolHandler::pointActiveToolToButtonTool(Button button) {
     Tool* tool = getButtonTool(button);

@@ -625,6 +625,38 @@
       <attribute name="action">win.tool-draw-spline</attribute>
       <attribute name="accel">&lt;Ctrl&gt;8</attribute>
      </item>
+     <submenu>
+      <attribute name="label" translatable="yes">Arrowheads</attribute>
+      <section>
+       <item>
+        <attribute name="label" translatable="yes">No Arrowheads</attribute>
+        <attribute name="action">win.tool-arrowheads</attribute>
+        <attribute name="target">none</attribute>
+       </item>
+       <item>
+        <attribute name="label" translatable="yes">Arrowhead at Start</attribute>
+        <attribute name="action">win.tool-arrowheads</attribute>
+        <attribute name="target">start</attribute>
+       </item>
+       <item>
+        <attribute name="label" translatable="yes">Arrowhead at End</attribute>
+        <attribute name="action">win.tool-arrowheads</attribute>
+        <attribute name="target">end</attribute>
+       </item>
+       <item>
+        <attribute name="label" translatable="yes">Arrowheads at Both Ends</attribute>
+        <attribute name="action">win.tool-arrowheads</attribute>
+        <attribute name="target">both</attribute>
+       </item>
+      </section>
+      <section>
+       <item>
+        <attribute name="label" translatable="yes">Cycle Arrowheads</attribute>
+        <attribute name="action">win.tool-arrowheads-cycle</attribute>
+        <attribute name="accel">&lt;Ctrl&gt;9</attribute>
+       </item>
+      </section>
+     </submenu>
     </submenu>
    </section>
    <section>

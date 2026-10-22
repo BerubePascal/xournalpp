@@ -20,7 +20,8 @@
 #include "control/settings/SettingsEnums.h"  // for Button
 #include "util/Color.h"                      // for Color
 
-#include "Tool.h"  // for Tool
+#include "Tool.h"                     // for Tool
+#include "control/tools/Arrowheads.h"  // for ArrowheadMode
 
 class LineStyle;
 class Settings;
@@ -386,6 +387,12 @@ public:
      */
     bool supportsTapFilter() const;
 
+    /**
+     * Arrowheads added to the open ends of shapes (line, spline, coordinate system). Shared by all those shapes.
+     */
+    void setArrowheadMode(ArrowheadMode mode);
+    ArrowheadMode getArrowheadMode() const;
+
 protected:
     void initTools();
 
@@ -424,6 +431,8 @@ private:
     std::unique_ptr<Tool> mouseButton4Tool;
     std::unique_ptr<Tool> mouseButton5Tool;
     std::unique_ptr<Tool> touchDrawingButtonTool;
+
+    ArrowheadMode arrowheadMode = ArrowheadMode::NONE;
 
     std::vector<ToolChangedCallback> toolChangeListeners;
 

@@ -15,6 +15,7 @@
 #include "control/ToolEnums.h"
 #include "control/UndoRedoController.h"
 #include "control/layer/LayerController.h"
+#include "control/tools/Arrowheads.h"
 #include "control/settings/Settings.h"
 #include "control/zoom/ZoomControl.h"
 #include "enums/Action.enum.h"
@@ -1135,5 +1136,27 @@ struct ActionProperties<Action::POSITION_HIGHLIGHTING> {
         g_simple_action_set_state(ga, p);
         bool enable = g_variant_get_boolean(p);
         ctrl->getSettings()->setHighlightPosition(enable);
+    }
+};
+
+template <>
+struct ActionProperties<Action::TOOL_ARROWHEADS> {
+    using state_type = const std::string&;
+    using parameter_type = state_type;
+    static std::string initialState(Control* ctrl) {
+        return Arrowheads::toString(ctrl->getToolHandler()->getArrowheadMode());
+    }
+    static void callback(GSimpleAction* ga, GVariant* p, Control* ctrl) {
+        g_simple_action_set_state(ga, p);
+        ctrl->getToolHandler()->setArrowheadMode(Arrowheads::fromString(g_variant_get_string(p, nullptr)));
+    }
+};
+
+template <>
+struct ActionProperties<Action::TOOL_ARROWHEADS_CYCLE> {
+    static void callback(GSimpleAction*, GVariant*, Control* ctrl) {
+        ArrowheadMode mode = Arrowheads::next(ctrl->getToolHandler()->getArrowheadMode());
+        ctrl->getToolHandler()->setArrowheadMode(mode);
+        ctrl->getActionDatabase()->setActionState(Action::TOOL_ARROWHEADS, Arrowheads::toString(mode));
     }
 };

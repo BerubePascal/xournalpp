@@ -177,6 +177,10 @@ enum class Action : size_t {
     // Miscellaneous
     POSITION_HIGHLIGHTING,
 
+    // Arrowheads on shapes
+    TOOL_ARROWHEADS,  ///< Action whose state is the arrowhead mode ("none", "start", "end" or "both")
+    TOOL_ARROWHEADS_CYCLE,
+
     // Keep this last value
     ENUMERATOR_COUNT
 };

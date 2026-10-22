@@ -72,6 +72,11 @@ private:
     virtual std::pair<std::vector<Point>, Range> createShape(bool isAltDown, bool isShiftDown, bool isControlDown) = 0;
 
     /**
+     * @brief Whether the shape has open ends that get arrowheads (see ToolHandler::getArrowheadMode())
+     */
+    virtual bool supportsArrowheads() const { return false; }
+
+    /**
      * @brief Update the current shape with the latest event info.
      *      Also warns the listeners about the change, usually triggering a redraw during the next screen update.
      */
