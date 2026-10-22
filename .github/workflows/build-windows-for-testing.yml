@@ -1,0 +1,19 @@
+# Manually build a Windows version of the selected branch, for testing personal modifications.
+# Use: Actions tab > "Build Windows (for testing)" > Run workflow > pick a branch.
+# The installer and portable zip appear under "Artifacts" on the finished run (kept 90 days).
+
+name: Build Windows (for testing)
+
+on:
+  workflow_dispatch:
+
+jobs:
+  build:
+    uses: ./.github/workflows/make-installer-windows.yml
+    with:
+      runner: windows-2022
+      displayed_name: Windows x86_64
+      msystem: ucrt64
+      msys_package_env: ucrt-x86_64
+      publish_portable_version: true
+      artifact_version_suffix: "-${{ github.ref_name }}"
