@@ -22,6 +22,7 @@
 #include "gui/MainWindow.h"
 #include "gui/SearchBar.h"
 #include "gui/XournalView.h"
+#include "gui/dialog/BackgroundSpacingDialog.h"
 #include "gui/dialog/RenameLayerDialog.h"
 #include "gui/toolbarMenubar/ToolMenuHandler.h"
 #include "model/Document.h"
@@ -570,6 +571,11 @@ struct ActionProperties<Action::PAPER_FORMAT> {
 template <>
 struct ActionProperties<Action::PAPER_BACKGROUND_COLOR> {
     static void callback(GSimpleAction*, GVariant*, Control* ctrl) { ctrl->changePageBackgroundColor(); }
+};
+
+template <>
+struct ActionProperties<Action::BACKGROUND_SPACING> {
+    static void callback(GSimpleAction*, GVariant*, Control* ctrl) { BackgroundSpacingDialog::show(ctrl); }
 };
 
 

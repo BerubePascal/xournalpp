@@ -190,6 +190,8 @@ enum class Action : size_t {
 
     TOOL_THICKNESS,  ///< Action whose state is the line width of the current tool (double, in points)
 
+    BACKGROUND_SPACING,  ///< Opens the dialog to change the spacing of the page background
+
     // Keep this last value
     ENUMERATOR_COUNT
 };

@@ -53,6 +53,11 @@ public:
     void setPaperSizeForNewPages(const std::optional<PaperSize>& paperSize);
     void applyCurrentPageBackgroundToAll();
     void applyBackgroundToAllPages(const PageType& pt);
+    /**
+     * Change the spacing of the lines / grid (in points) of the current page or of all pages, keeping their kind of
+     * background. Pages whose background has no spacing (plain, PDF, image...) are left unchanged.
+     */
+    void changeBackgroundSpacing(double spacing, bool allPages);
     void applyPageSizeToAllPages(const PaperSize& paperSize);
     void changePdfPagesBackground(const fs::path& filepath, bool attachPdf);
     void insertNewPage(size_t position, bool automatedInsertion = false);

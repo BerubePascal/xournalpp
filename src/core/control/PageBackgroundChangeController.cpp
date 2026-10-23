@@ -3,6 +3,7 @@
 #include <memory>   // for __shared_ptr...
 #include <string>   // for allocator
 #include <utility>  // for move
+#include <vector>   // for vector
 
 #include <gdk-pixbuf/gdk-pixbuf.h>  // for gdk_pixbuf_g...
 #include <gio/gio.h>                // for GFile
@@ -17,6 +18,7 @@
 #include "gui/menus/menubar/Menubar.h"                   // for Menubar
 #include "gui/menus/menubar/PageTypeSubmenu.h"           // for PageTypeSubmenu
 #include "model/BackgroundImage.h"                       // for BackgroundImage
+#include "model/BackgroundSpacing.h"                     // for BackgroundSpacing
 #include "model/Document.h"                              // for Document
 #include "model/PageType.h"                              // for PageType
 #include "model/XojPage.h"                               // for XojPage
@@ -76,6 +78,40 @@ void PageBackgroundChangeController::applyBackgroundToAllPages(const PageType& p
         askForPdfBackground([apply = std::move(apply)](size_t pdfPage) { apply(pdfPage); });
     } else {
         apply();
+    }
+}
+
+void PageBackgroundChangeController::changeBackgroundSpacing(double spacing, bool allPages) {
+    control->clearSelectionEndText();
+
+    Document* doc = control->getDocument();
+    const size_t currentPage = control->getCurrentPageNo();
+    auto groupUndoAction = std::make_unique<GroupUndoAction>();
+    std::vector<size_t> changedPages;
+
+    doc->lock();
+    const size_t nbPages = doc->getPageCount();
+    for (size_t p = 0; p < nbPages; p++) {
+        if (!allPages && p != currentPage) {
+            continue;
+        }
+        const PageType pageType = doc->getPage(p)->getBackgroundType();
+        if (!BackgroundSpacing::get(pageType)) {
+            continue;  // No spacing for this kind of background
+        }
+        if (auto undoAction = commitPageTypeChange(p, BackgroundSpacing::with(pageType, spacing))) {
+            groupUndoAction->addAction(std::move(undoAction));
+            changedPages.push_back(p);
+        }
+    }
+    doc->unlock();
+
+    if (changedPages.empty()) {
+        return;
+    }
+    control->getUndoRedoHandler()->addUndoAction(std::move(groupUndoAction));
+    for (size_t p: changedPages) {
+        control->firePageChanged(p);
     }
 }
 
