@@ -5,31 +5,17 @@
 
 #include <gdk/gdkkeysyms.h>  // for GDK_KEY_Escape
 
+#include "control/tools/ShapePoints.h"             // for ShapePoints
 #include "control/tools/SnapToGridInputHandler.h"  // for SnapToGridInputHandler
 #include "gui/inputdevices/InputEvents.h"          // for KeyEvent
 #include "gui/inputdevices/PositionInputData.h"    // for PositionInputData
 #include "model/Stroke.h"                          // for Stroke
 
 namespace {
-/// Length of the segments approximating the arc (in document coordinates)
-constexpr double SEGMENT_LENGTH = 1.0;
-constexpr size_t MIN_SEGMENTS = 8;
-constexpr size_t MAX_SEGMENTS = 2000;
 /// Smallest radius accepted (in document coordinates)
 constexpr double MIN_RADIUS = 1.0;
 /// The arc stays just short of a full circle
 constexpr double MAX_SWEEP = 2 * M_PI - 1e-3;
-
-/// a - b, brought into (-pi, pi]
-auto angleDifference(double a, double b) -> double {
-    double d = std::fmod(a - b, 2 * M_PI);
-    if (d > M_PI) {
-        d -= 2 * M_PI;
-    } else if (d <= -M_PI) {
-        d += 2 * M_PI;
-    }
-    return d;
-}
 }  // namespace
 
 ArcHandler::ArcHandler(Control* control, const PageRef& page): BaseShapeHandler(control, page) {}
@@ -106,23 +92,20 @@ auto ArcHandler::createShape(bool isAltDown, bool, bool) -> std::pair<std::vecto
 
     // Accumulate the angle swept by the pointer, so the arc goes the way the pointer went
     double angle = std::atan2(this->currPoint.y - center.y, this->currPoint.x - center.x);
-    this->sweep = std::clamp(this->sweep + angleDifference(angle, this->lastAngle), -MAX_SWEEP, MAX_SWEEP);
+    this->sweep = std::clamp(this->sweep + ShapePoints::angleDifference(angle, this->lastAngle), -MAX_SWEEP, MAX_SWEEP);
     this->lastAngle = angle;
 
     // Rotation snapping applies to the angle of the arc
-    double arcAngle = std::clamp(snappingHandler.snapAngle(this->sweep, isAltDown), -MAX_SWEEP, MAX_SWEEP);
-
-    size_t segments = static_cast<size_t>(std::ceil(std::abs(arcAngle) * radius / SEGMENT_LENGTH));
-    segments = std::clamp(segments, MIN_SEGMENTS, MAX_SEGMENTS);
+    ShapePoints::Arc arc;
+    arc.center = center;
+    arc.radius = radius;
+    arc.startAngle = startAngle;
+    arc.sweep = std::clamp(snappingHandler.snapAngle(this->sweep, isAltDown), -MAX_SWEEP, MAX_SWEEP);
 
     std::pair<std::vector<Point>, Range> res;
     auto& [points, rg] = res;
-    points.reserve(segments + 1);
-    for (size_t i = 0; i <= segments; i++) {
-        double a = startAngle + arcAngle * static_cast<double>(i) / static_cast<double>(segments);
-        points.emplace_back(center.x + radius * std::cos(a), center.y + radius * std::sin(a));
-    }
-    if (std::abs(arcAngle) < 1e-6) {
+    points = ShapePoints::arcPoints(arc);
+    if (std::abs(arc.sweep) < 1e-6) {
         points.resize(1);  // No arc yet
     }
     rg = Range(points.front().x, points.front().y);

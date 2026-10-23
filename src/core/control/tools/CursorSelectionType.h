@@ -28,5 +28,7 @@ enum CursorSelectionType {
     CURSOR_SELECTION_TOP,
     CURSOR_SELECTION_BOTTOM,
     CURSOR_SELECTION_ROTATE,
-    CURSOR_SELECTION_DELETE
+    CURSOR_SELECTION_DELETE,
+    // A corner of a simple shape (see ShapePointsEditor)
+    CURSOR_SELECTION_SHAPE_POINT
 };

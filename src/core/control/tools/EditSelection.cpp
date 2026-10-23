@@ -26,6 +26,7 @@
 #include "model/Layer.h"                          // for Layer
 #include "model/LineStyle.h"                      // for LineStyle
 #include "model/Point.h"                          // for Point
+#include "model/Stroke.h"                         // for Stroke
 #include "model/XojPage.h"                        // for XojPage
 #include "undo/ArrangeUndoAction.h"               // for ArrangeUndoAction
 #include "undo/InsertUndoAction.h"                // for InsertsUndoAction
@@ -38,6 +39,7 @@
 #include "util/serializing/ObjectOutputStream.h"  // for ObjectOutputStream
 
 #include "EditSelectionContents.h"  // for EditSelectionConte...
+#include "ShapePointsEditor.h"      // for ShapePointsEditor
 
 class XojFont;
 
@@ -231,6 +233,9 @@ EditSelection::EditSelection(Control* ctrl, InsertionOrder elts, const PageRef& 
     this->contents = std::make_unique<EditSelectionContents>(this->getRect(), this->snappedBounds, this->sourcePage,
                                                              this->sourceLayer, this->view);
     this->contents->replaceInsertionOrder(std::move(elts));
+
+    this->shapePointsEditor = ShapePointsEditor::create(this->contents->getInsertionOrder());
+    this->shapePointsBounds = this->snappedBounds;
 
     cairo_matrix_init_identity(&this->cmatrix);
     this->view->getXournal()->getCursor()->setRotationAngle(0);
@@ -494,6 +499,13 @@ auto EditSelection::rearrangeInsertionOrder(const OrderChange change) -> UndoAct
  * (should be called in the mouse-button-released event handler)
  */
 void EditSelection::mouseUp() {
+    if (this->mouseDownType == CURSOR_SELECTION_SHAPE_POINT) {
+        if (auto undoAction = this->shapePointsEditor->endDrag(this->sourcePage)) {
+            this->undo->addUndoAction(std::move(undoAction));
+        }
+        this->mouseDownType = CURSOR_SELECTION_NONE;
+        return;
+    }
     if (this->mouseDownType == CURSOR_SELECTION_DELETE) {
         this->view->getXournal()->deleteSelection();
         return;
@@ -525,6 +537,11 @@ void EditSelection::mouseDown(CursorSelectionType type, double x, double y) {
 
     this->mouseDownType = type;
 
+    if (type == CURSOR_SELECTION_SHAPE_POINT) {
+        this->shapePointsEditor->startDrag(this->shapePointsHovered);
+        return;
+    }
+
     // coordinates relative to top left corner of snapped bounds in coordinate system which is not modified
     this->relMousePosX = x / zoom - this->snappedBounds.x;
     this->relMousePosY = y / zoom - this->snappedBounds.y;
@@ -538,6 +555,15 @@ void EditSelection::mouseDown(CursorSelectionType type, double x, double y) {
 
 void EditSelection::mouseMove(double mouseX, double mouseY, bool alt) {
     double zoom = this->view->getXournal()->getZoom();
+
+    if (this->mouseDownType == CURSOR_SELECTION_SHAPE_POINT) {
+        const double oldX = this->x, oldY = this->y, oldW = this->width, oldH = this->height;
+        this->shapePointsEditor->dragTo(Point(mouseX / zoom, mouseY / zoom), alt, this->snappingHandler);
+        updateGeometryFromShape();
+        this->view->rerenderRect(oldX, oldY, oldW, oldH);
+        this->view->getXournal()->repaintSelection();
+        return;
+    }
 
     if (this->mouseDownType == CURSOR_SELECTION_MOVE) {
         // compute translation (without snapping)
@@ -967,6 +993,13 @@ auto EditSelection::getSelectionTypeForPos(double x, double y, double zoom) -> C
     auto [xmin, xmax] = std::minmax(x1, x2);
     auto [ymin, ymax] = std::minmax(y1, y2);
 
+    if (shapePointsAvailable()) {
+        if (auto handle = this->shapePointsEditor->handleAt(x / zoom, y / zoom, (this->btnWidth / 2.0 + 3) / zoom)) {
+            this->shapePointsHovered = *handle;
+            return CURSOR_SELECTION_SHAPE_POINT;
+        }
+    }
+
     cairo_matrix_transform_point(&this->cmatrix, &x, &y);
 
 
@@ -1105,7 +1138,30 @@ void EditSelection::paint(cairo_t* cr, double zoom) {
         // rotation handle
         drawAnchorRotation(cr, std::min(x, x + width) + std::abs(width) + (ROTATE_PADDING + this->btnWidth) / zoom,
                            y + height / 2, zoom);
+
+        if (shapePointsAvailable()) {
+            this->shapePointsEditor->paintHandles(cr, zoom, selectionColor, this->btnWidth + 2);
+        }
     }
+}
+
+auto EditSelection::shapePointsAvailable() const -> bool {
+    return this->shapePointsEditor && std::abs(this->rotation) <= std::numeric_limits<double>::epsilon() &&
+           this->snappedBounds == this->shapePointsBounds;
+}
+
+void EditSelection::updateGeometryFromShape() {
+    const Stroke* stroke = this->shapePointsEditor->getStroke();
+    const auto& bounds = stroke->getBoundingBox();
+    // Same padding as in the constructor
+    const double PADDING = 12.;
+    this->x = bounds.x - PADDING;
+    this->y = bounds.y - PADDING;
+    this->width = bounds.width + 2 * PADDING;
+    this->height = bounds.height + 2 * PADDING;
+    this->snappedBounds = stroke->getSnappedBounds();
+    this->shapePointsBounds = this->snappedBounds;
+    this->contents->resetGeometry(this->getRect(), this->snappedBounds);
 }
 
 void EditSelection::drawAnchorRotation(cairo_t* cr, double x, double y, double zoom) {

@@ -40,6 +40,7 @@ class Layer;
 class XojPageView;
 class Selection;
 class EditSelectionContents;
+class ShapePointsEditor;
 class DeleteUndoAction;
 class LineStyle;
 class ObjectInputStream;
@@ -354,6 +355,17 @@ private:
 
     static bool handleEdgePan(EditSelection* self);
 
+    /**
+     * Whether the corner handles of a selected simple shape are shown and usable: only while the selection has not
+     * been moved, resized or rotated (the shape is then where its points are)
+     */
+    bool shapePointsAvailable() const;
+
+    /**
+     * Fit the selection around the shape again, after its corners were edited
+     */
+    void updateGeometryFromShape();
+
 private:  // DATA
     /**
      * The position (and rotation) relative to the current view
@@ -407,6 +419,15 @@ private:  // DATA
      * The contents of the selection
      */
     std::unique_ptr<EditSelectionContents> contents;
+
+    /**
+     * Corner handles, if the selection is a single simple shape
+     */
+    std::unique_ptr<ShapePointsEditor> shapePointsEditor;
+    /// The snapped bounds for which the corner handles are valid (see shapePointsAvailable())
+    xoj::util::Rectangle<double> shapePointsBounds{};
+    /// The corner handle found by the last getSelectionTypeForPos()
+    size_t shapePointsHovered = 0;
 
 private:  // HANDLER
     /**

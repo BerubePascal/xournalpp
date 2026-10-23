@@ -126,6 +126,12 @@ public:
     void updateContent(xoj::util::Rectangle<double> bounds, xoj::util::Rectangle<double> snappedBounds, double rotation,
                        Layer* layer, const PageRef& targetPage, UndoRedoHandler* undo, CursorSelectionType type);
 
+    /**
+     * Forget all pending transformations: the elements, as they are now, fill the given bounds.
+     * Used after the elements were modified directly (e.g. editing the corners of a shape)
+     */
+    void resetGeometry(xoj::util::Rectangle<double> bounds, xoj::util::Rectangle<double> snappedBounds);
+
 private:
     /**
      * Delete our internal View buffer,

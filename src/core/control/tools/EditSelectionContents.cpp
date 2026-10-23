@@ -322,6 +322,15 @@ void EditSelectionContents::deleteViewBuffer() {
     }
 }
 
+void EditSelectionContents::resetGeometry(Rectangle<double> bounds, Rectangle<double> snappedBounds) {
+    this->originalBounds = bounds;
+    this->lastBounds = bounds;
+    this->lastSnappedBounds = snappedBounds;
+    this->relativeX = -9999999999;
+    this->relativeY = -9999999999;
+    deleteViewBuffer();
+}
+
 InsertionOrder EditSelectionContents::makeMoveEffective(const xoj::util::Rectangle<double>& bounds,
                                                         const xoj::util::Rectangle<double>& snappedBounds) {
     double fx = bounds.width / this->originalBounds.width;
