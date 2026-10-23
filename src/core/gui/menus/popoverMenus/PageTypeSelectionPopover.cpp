@@ -157,6 +157,8 @@ PageTypeSelectionPopover::PageTypeSelectionPopover(Control* control, Settings* s
         selectedOrientation(selectedPageSize ? selectedPageSize->orientation() : PaperOrientation::VERTICAL) {
     static_assert(is_action_namespace_match<decltype(win)>(G_ACTION_NAMESPACE));
 
+    this->reselectSameEntry = true;  // Choosing the same background again applies it to the (new) current page
+
     PaperFormatUtils::loadDefaultPaperSizes(paperSizeMenuOptions);
     // Add Special options
     customPaperSizeIndex = static_cast<uint32_t>(paperSizeMenuOptions.size());
@@ -329,48 +331,6 @@ GtkWidget* PageTypeSelectionPopover::createPopover() const {
     gtk_box_append(box, createSeparator());
     gtk_box_append(box, GTK_WIDGET(pageFormatBox));
 
-    GtkWidget* applyToCurrentPageButton = gtk_button_new_with_label(_("Apply to current page"));
-    g_signal_connect_data(
-            applyToCurrentPageButton, "clicked", G_CALLBACK((+[](GtkButton*, gpointer pointerTuple) {
-                auto [self, popover] =
-                        *static_cast<std::tuple<const PageTypeSelectionPopover*, GtkPopover*>*>(pointerTuple);
-                if (self->selectedPT) {
-                    self->controller->changeCurrentPageBackground(self->selectedPT.value());
-                }
-                if (self->selectedPageSize && (!self->selectedPT.has_value() || !self->selectedPT->isSpecial())) {
-                    self->controller->changeCurrentPageSize(self->selectedPageSize.value());
-                }
-            })),
-            new std::tuple<const PageTypeSelectionPopover*, GtkPopover*>(this, GTK_POPOVER(popover)),
-            xoj::util::closure_notify_cb<std::tuple<const PageTypeSelectionPopover*, GtkPopover*>>, GConnectFlags(0));
-    gtk_widget_set_margin_start(applyToCurrentPageButton, 10);
-    gtk_widget_set_margin_end(applyToCurrentPageButton, 10);
-    gtk_widget_set_margin_bottom(applyToCurrentPageButton, 3);
-    gtk_box_append(box, applyToCurrentPageButton);
-
-    // We cannot "Apply to current page" if neither page type nor page size is selected...
-    gtk_widget_set_sensitive(applyToCurrentPageButton,
-                             this->selectedPT.has_value() || this->selectedPageSize.has_value());
-
-    connectToLonglivedAction(
-            this->typeSelectionAction.get(), "notify::state",
-            G_CALLBACK((+[](GObject* a, GParamSpec*, gpointer pointerTuple) {
-                auto [btn, self] = *static_cast<std::pair<GtkWidget*, const PageTypeSelectionPopover*>*>(pointerTuple);
-                xoj::util::GVariantSPtr state(g_action_get_state(G_ACTION(a)), xoj::util::adopt);
-                auto selectedIndex = getGVariantValue<size_t>(state.get());
-                gtk_widget_set_sensitive(
-                        btn, selectedIndex != COPY_CURRENT_PLACEHOLDER || self->selectedPageSize.has_value());
-            })),
-            applyToCurrentPageButton);
-
-    connectToLonglivedAction(
-            this->pageSizeChangedAction.get(), "activate",
-            G_CALLBACK((+[](GSimpleAction*, GVariant*, gpointer pointerTuple) {
-                auto [btn, self] = *static_cast<std::pair<GtkWidget*, const PageTypeSelectionPopover*>*>(pointerTuple);
-                gtk_widget_set_sensitive(btn, self->selectedPT.has_value() || self->selectedPageSize.has_value());
-            })),
-            applyToCurrentPageButton);
-
     g_signal_connect_object(this->comboBoxChangeSelectionAction.get(), "activate",
                             G_CALLBACK(+[](GSimpleAction*, GVariant* comboBoxIndex, gpointer comboBoxPtr) {
                                 auto* comboBox = static_cast<GtkWidget*>(comboBoxPtr);
@@ -421,10 +381,12 @@ void PageTypeSelectionPopover::changedPaperFormatTemplateCb(GtkComboBox* widget,
         }
 
         self->setSelectedPaperSize<false>(paperSize);
+        self->applyPaperSizeToCurrentPage();
     } else if (selected == self->customPaperSizeIndex) {
         std::unique_ptr<xoj::popup::PopupWindowWrapper<xoj::popup::FormatDialog>> popup;
         auto callback = [self](double width, double height) {
             self->setSelectedPaperSize<true>(PaperSize(width, height));
+            self->applyPaperSizeToCurrentPage();
         };
         if (self->selectedPageSize) {
             popup = std::make_unique<xoj::popup::PopupWindowWrapper<xoj::popup::FormatDialog>>(
@@ -449,9 +411,21 @@ void PageTypeSelectionPopover::changedOrientationSelectionCallback(GSimpleAction
     if (self->selectedPageSize && (self->selectedPageSize->orientation() != self->selectedOrientation)) {
         self->selectedPageSize->swapWidthHeight();
         self->controller->setPaperSizeForNewPages(self->selectedPageSize);
+        self->applyPaperSizeToCurrentPage();
+    }
+}
+
+void PageTypeSelectionPopover::applyPaperSizeToCurrentPage() const {
+    // Special backgrounds (PDF, image) come with their own size
+    if (this->selectedPageSize && !(this->selectedPT && this->selectedPT->isSpecial())) {
+        this->controller->changeCurrentPageSize(this->selectedPageSize.value());
     }
 }
 
 void PageTypeSelectionPopover::entrySelected(const PageTypeInfo*) {
     this->controller->setPageTypeForNewPages(this->selectedPT);
+    // Choosing a background applies it to the current page right away ("Apply to all pages" applies it everywhere)
+    if (this->selectedPT) {
+        this->controller->changeCurrentPageBackground(this->selectedPT.value());
+    }
 }

@@ -44,4 +44,6 @@ constexpr static char CFG_ROUND_MARGIN[] = "rm";
 constexpr static char CFG_RASTER[] = "r1";
 constexpr static char CFG_BOLD_LINE_INTERVAL[] = "bli";
 constexpr static char CFG_BOLD_LINE_WIDTH[] = "blw";
+/// Graph: distance of the vertical margin line from the left edge. Drawn on the closest grid line
+constexpr static char CFG_MARGIN_LINE[] = "ml";
 }  // namespace background_config_strings

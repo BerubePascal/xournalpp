@@ -4,6 +4,11 @@
 name=Plain
 format=plain
 
+[plainWithMarginLine]
+name=Plain with vertical line
+format=plain
+config=ml=70.87
+
 [predefinedRuled]
 name=Ruled
 format=ruled
@@ -24,6 +29,11 @@ format=staves
 [predefinedGraph]
 name=Graph
 format=graph
+
+[graphWithMarginLine]
+name=Graph with vertical line
+format=graph
+config=ml=70.87
 
 [predefinedDotted]
 name=Dotted

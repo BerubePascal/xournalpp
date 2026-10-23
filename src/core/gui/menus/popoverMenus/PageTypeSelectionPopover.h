@@ -46,6 +46,8 @@ public:
 
 private:
     void entrySelected(const PageTypeInfo* info) override;
+    /// Size and orientation chosen in the menu apply to the current page right away (and to new pages)
+    void applyPaperSizeToCurrentPage() const;
 
     static void changedOrientationSelectionCallback(GSimpleAction* ga, GVariant* parameter,
                                                     PageTypeSelectionPopover* self);

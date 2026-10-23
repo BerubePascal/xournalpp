@@ -13,6 +13,7 @@
 #include "IsoGraphBackgroundView.h"                 // for IsoGraphBackgrou...
 #include "LinedBackgroundView.h"                    // for LinedBackgroundView
 #include "PdfBackgroundView.h"                      // for PdfBackgroundView
+#include "MarginLine.h"                             // for PlainMarginLineBackgroundView
 #include "PlainBackgroundView.h"                    // for PlainBackgroundView
 #include "RuledBackgroundView.h"                    // for RuledBackgroundView
 #include "StavesBackgroundView.h"                   // for StavesBackground...
@@ -25,6 +26,9 @@ auto BackgroundView::createRuled(double width, double height, Color backgroundCo
     std::unique_ptr<OneColorBackgroundView> res;
     switch (pt.format) {
         case PageTypeFormat::Plain:
+            if (!pt.config.empty()) {  // e.g. with a margin line
+                return std::make_unique<PlainMarginLineBackgroundView>(width, height, backgroundColor, pt.config);
+            }
             return std::make_unique<PlainBackgroundView>(width, height, backgroundColor);
         case PageTypeFormat::Ruled:
             res = std::make_unique<RuledBackgroundView>(width, height, backgroundColor, pt.config);

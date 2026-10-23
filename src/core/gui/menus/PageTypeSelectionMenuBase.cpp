@@ -49,7 +49,8 @@ PageTypeSelectionMenuBase::PageTypeSelectionMenuBase(PageTypeHandler* typesHandl
 
 void PageTypeSelectionMenuBase::changeSelectionCallback(GSimpleAction* ga, GVariant* parameter,
                                                         PageTypeSelectionMenuBase* self) {
-    if (g_variant_equal(parameter, xoj::util::GVariantSPtr(g_action_get_state(G_ACTION(ga)), xoj::util::adopt).get())) {
+    if (!self->reselectSameEntry &&
+        g_variant_equal(parameter, xoj::util::GVariantSPtr(g_action_get_state(G_ACTION(ga)), xoj::util::adopt).get())) {
         return;
     }
 

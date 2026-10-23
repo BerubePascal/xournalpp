@@ -15,7 +15,8 @@ using namespace xoj::view;
 GraphBackgroundView::GraphBackgroundView(double pageWidth, double pageHeight, Color backgroundColor,
                                          const BackgroundConfig& config):
         OneColorBackgroundView(pageWidth, pageHeight, backgroundColor, config, DEFAULT_LINE_WIDTH, DEFAULT_LINE_COLOR,
-                               ALT_DEFAULT_LINE_COLOR) {
+                               ALT_DEFAULT_LINE_COLOR),
+        marginLine(config, backgroundColor) {
 
     config.loadValue(CFG_RASTER, squareSize);
     config.loadValue(CFG_MARGIN, margin);
@@ -133,4 +134,17 @@ void GraphBackgroundView::draw(cairo_t* cr) const {
     }
 
     cairo_restore(cr);
+
+    drawMarginLine(cr);
+}
+
+void GraphBackgroundView::drawMarginLine(cairo_t* cr) const {
+    if (marginLine.distance <= 0.0 || squareSize <= 0.0) {
+        return;
+    }
+    // On the grid line closest to the requested distance, so it follows the grid spacing
+    const double x = std::max(1.0, std::round(marginLine.distance / squareSize)) * squareSize;
+    if (x < pageWidth) {
+        marginLine.draw(cr, x, pageHeight);
+    }
 }

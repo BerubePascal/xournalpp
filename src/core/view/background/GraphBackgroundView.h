@@ -15,6 +15,7 @@
 
 #include "util/Color.h"  // for Color
 
+#include "MarginLine.h"              // for MarginLine
 #include "OneColorBackgroundView.h"  // for OneColorBackgroundView
 
 class BackgroundConfig;
@@ -33,6 +34,9 @@ protected:
     double squareSize = 14.17;  // 5mm
     int boldLineInterval = 0;   // 0 means no bold lines, otherwise every Nth line is bold
     double boldLineWidth = 1.5;
+    MarginLine marginLine;  // Drawn on the grid line closest to the requested distance
+
+    void drawMarginLine(cairo_t* cr) const;
 
     constexpr static Color DEFAULT_LINE_COLOR = Colors::xopp_silver;
     constexpr static Color ALT_DEFAULT_LINE_COLOR = Colors::xopp_darkslategray;

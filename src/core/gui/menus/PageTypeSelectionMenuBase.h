@@ -55,6 +55,9 @@ protected:
 
     bool changeCurrentPageUponCallback = false;
 
+    /// Whether choosing the entry that is already selected selects it again (e.g. to apply it to another page)
+    bool reselectSameEntry = false;
+
 public:
     static constexpr size_t COPY_CURRENT_PLACEHOLDER = std::numeric_limits<size_t>::max();
 };
