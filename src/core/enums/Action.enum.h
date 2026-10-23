@@ -188,6 +188,8 @@ enum class Action : size_t {
     // Arc tool
     TOOL_DRAW_ARC,
 
+    TOOL_THICKNESS,  ///< Action whose state is the line width of the current tool (double, in points)
+
     // Keep this last value
     ENUMERATOR_COUNT
 };

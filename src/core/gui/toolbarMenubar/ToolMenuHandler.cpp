@@ -38,6 +38,7 @@
 #include "SpacerItem.h"
 #include "StylePopoverFactory.h"     // for ToolButtonWithStylePopover
 #include "ArrowheadPopoverFactory.h"  // for ArrowheadPopoverFactory
+#include "ToolThicknessSlider.h"      // for ToolThicknessSlider
 #include "ToolButton.h"              // for ToolButton
 #include "ToolPageLayer.h"           // for ToolPageLayer
 #include "ToolPageSpinner.h"         // for ToolPageSpinner
@@ -487,6 +488,8 @@ void ToolMenuHandler::initToolItems() {
     toolPageSpinner = &emplaceItem<ToolPageSpinner>("PAGE_SPIN", iconNameHelper, control->getScrollHandler());
 
     emplaceItem<ToolZoomSlider>("ZOOM_SLIDER", zoom, iconNameHelper, *control->getActionDatabase());
+    emplaceItem<ToolThicknessSlider>("THICKNESS_SLIDER", control->getToolHandler(), iconNameHelper,
+                                     *control->getActionDatabase());
 
     emplaceItem<ToolPageLayer>("LAYER", control->getLayerController(), iconNameHelper);
 

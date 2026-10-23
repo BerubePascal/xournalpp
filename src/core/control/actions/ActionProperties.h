@@ -999,6 +999,19 @@ struct ActionProperties<Action::TOOL_FILL> {
 };
 
 template <>
+struct ActionProperties<Action::TOOL_THICKNESS> {
+    using state_type = double;
+    static state_type initialState(Control* ctrl) {
+        return ctrl->getToolHandler()->hasCapability(TOOL_CAP_SIZE) ? ctrl->getToolHandler()->getThickness() : 1.0;
+    }
+    static bool initiallyEnabled(Control* ctrl) { return ctrl->getToolHandler()->hasCapability(TOOL_CAP_SIZE); }
+    static void callback(GSimpleAction* ga, GVariant* p, Control* ctrl) {
+        g_simple_action_set_state(ga, p);
+        ctrl->setToolThickness(g_variant_get_double(p));
+    }
+};
+
+template <>
 struct ActionProperties<Action::TOOL_FILL_OPACITY> {
     static bool initiallyEnabled(Control* ctrl) { return ctrl->getToolHandler()->hasCapability(TOOL_CAP_FILL); }
     static void callback(GSimpleAction*, GVariant*, Control* ctrl) {

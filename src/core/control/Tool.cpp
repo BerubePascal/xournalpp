@@ -11,7 +11,12 @@ Tool::Tool(std::string name, ToolType type, Color color, std::optional<std::arra
     setColor(color);
 }
 
-Tool::Tool(const Tool& t): name{t.name}, type{t.type}, thickness{t.thickness}, capabilities{t.capabilities} {
+Tool::Tool(const Tool& t):
+        name{t.name},
+        type{t.type},
+        thickness{t.thickness},
+        customThickness{t.customThickness},
+        capabilities{t.capabilities} {
     setColor(t.getColor());
 }
 
@@ -32,6 +37,10 @@ void Tool::setCapability(ToolCapabilities capability, bool enabled) {
 auto Tool::hasCapability(ToolCapabilities cap) const -> bool { return (this->capabilities & cap) != 0; }
 
 auto Tool::getThickness(ToolSize size) const -> double { return this->thickness.value()[size - TOOL_SIZE_VERY_FINE]; }
+
+auto Tool::getCustomThickness() const -> std::optional<double> { return this->customThickness; }
+
+void Tool::setCustomThickness(std::optional<double> t) { this->customThickness = t; }
 
 auto Tool::isDrawingTool() const -> bool {
     return this->type == TOOL_PEN || this->type == TOOL_HIGHLIGHTER || this->type == TOOL_ERASER;

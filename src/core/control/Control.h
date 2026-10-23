@@ -271,6 +271,8 @@ public:
     void reorderSelection(EditSelection::OrderChange change);
 
     void setToolSize(ToolSize size);
+    /// Line width chosen freely (width slider). Snaps to the tool's sizes when close to one of them
+    void setToolThickness(double thickness);
 
     /**
      * Change the line style of the PEN if select, or of selected elements if any

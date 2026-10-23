@@ -392,6 +392,13 @@ public:
      * other drawing types are ignored (and never get arrowheads).
      */
     void setArrowheadMode(DrawingType shape, ArrowheadMode mode);
+
+    /**
+     * Width chosen freely (e.g. with the width slider) for the tool selected in the toolbar, instead of one of its
+     * sizes. Choosing a size (setSize()) goes back to the sizes.
+     */
+    void setCustomThickness(double thickness);
+    bool hasCustomThickness() const;
     ArrowheadMode getArrowheadMode(DrawingType shape) const;
 
 protected:

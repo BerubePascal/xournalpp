@@ -46,6 +46,10 @@ public:
 
     double getThickness(ToolSize size) const;
 
+    /// A width chosen freely (e.g. with the width slider) instead of one of the sizes. nullopt when a size is used
+    std::optional<double> getCustomThickness() const;
+    void setCustomThickness(std::optional<double> thickness);
+
     /**
      * @brief Check whether the tool is a Drawing tool.
      * Drawing tools are considered all tools that directly change the canvas.
@@ -70,6 +74,7 @@ private:
     ToolType type;
 
     std::optional<std::array<double, toolSizes>> thickness;
+    std::optional<double> customThickness;
 
     ToolCapabilities capabilities;
 

@@ -1221,6 +1221,7 @@ void Control::toolChanged() {
 
     bool enableSize = toolHandler->hasCapability(TOOL_CAP_SIZE);
     this->actionDB->enableAction(Action::TOOL_SIZE, enableSize);
+    this->actionDB->enableAction(Action::TOOL_THICKNESS, enableSize);
     if (enableSize) {
         toolSizeChanged();
     }
@@ -1291,7 +1292,11 @@ void Control::toolSizeChanged() {
         highlighterSizeChanged();
     }
 
-    this->actionDB->setActionState(Action::TOOL_SIZE, toolHandler->getSize());
+    this->actionDB->setActionState(Action::TOOL_SIZE,
+                                   toolHandler->hasCustomThickness() ? TOOL_SIZE_NONE : toolHandler->getSize());
+    if (toolHandler->hasCapability(TOOL_CAP_SIZE)) {
+        this->actionDB->setActionState(Action::TOOL_THICKNESS, toolHandler->getThickness());
+    }
 
     getCursor()->updateCursor();
 }
@@ -2619,6 +2624,23 @@ void Control::setToolSize(ToolSize size) {
                                                            toolHandler->getToolThickness(TOOL_ERASER))));
     }
     this->toolHandler->setSize(size);
+}
+
+void Control::setToolThickness(double thickness) {
+    // Snap to the tool's sizes when close to one of them (relative difference, since the slider is logarithmic)
+    constexpr double SNAP_RATIO = 1.06;
+    const Tool& tool = *toolHandler->getActiveTool();
+    if (!tool.hasCapability(TOOL_CAP_SIZE)) {
+        return;
+    }
+    for (int s = TOOL_SIZE_VERY_FINE; s <= TOOL_SIZE_VERY_THICK; s++) {
+        double size = tool.getThickness(static_cast<ToolSize>(s));
+        if (thickness < size * SNAP_RATIO && thickness > size / SNAP_RATIO) {
+            toolHandler->setSize(static_cast<ToolSize>(s));
+            return;
+        }
+    }
+    toolHandler->setCustomThickness(thickness);
 }
 
 void Control::fontChanged(const XojFont& font) {

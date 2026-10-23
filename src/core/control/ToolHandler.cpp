@@ -320,6 +320,9 @@ auto ToolHandler::getTextJustify() const -> bool { return this->getTool(TOOL_TEX
 
 auto ToolHandler::getThickness() const -> double {
     Tool* tool = this->activeTool;
+    if (auto custom = tool->getCustomThickness()) {
+        return *custom;
+    }
     if (tool->thickness) {
         return tool->thickness.value()[tool->getSize()];
     }
@@ -335,8 +338,16 @@ void ToolHandler::setSize(ToolSize size) {
 
     Tool* tool = this->toolbarSelectedTool;
     tool->setSize(clippedSize);
+    tool->setCustomThickness(std::nullopt);
     this->stateChangeListener->toolSizeChanged();
 }
+
+void ToolHandler::setCustomThickness(double thickness) {
+    this->toolbarSelectedTool->setCustomThickness(thickness);
+    this->stateChangeListener->toolSizeChanged();
+}
+
+auto ToolHandler::hasCustomThickness() const -> bool { return this->activeTool->getCustomThickness().has_value(); }
 
 void ToolHandler::setButtonSize(ToolSize size, Button button) {
     ToolSize clippedSize = std::clamp(size, TOOL_SIZE_VERY_FINE, TOOL_SIZE_VERY_THICK);
@@ -475,6 +486,9 @@ void ToolHandler::saveSettings() const {
             }
 
             st.setString("size", value);
+            if (auto custom = tool->getCustomThickness()) {
+                st.setDouble("customThickness", *custom);
+            }
         }
 
         if (tool->hasCapability(TOOL_CAP_FILL)) {
@@ -567,6 +581,11 @@ void ToolHandler::loadSettings() {
                 } else {
                     g_warning("Settings::Unknown tool size: %s\n", value.c_str());
                 }
+            }
+            double customThickness{};
+            if (tool->hasCapability(TOOL_CAP_SIZE) && st.getDouble("customThickness", customThickness) &&
+                customThickness > 0) {
+                tool->setCustomThickness(customThickness);
             }
 
             if (tool->type == TOOL_ERASER) {

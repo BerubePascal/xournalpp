@@ -127,4 +127,5 @@ constexpr const char* ACTION_NAMES[] = {  // Action to string conversion map
         "tool-arrowheads-coordinate-system",
         "tool-arrowheads-arc",
         "tool-arrowheads-cycle",
-        "tool-draw-arc"};
+        "tool-draw-arc",
+        "tool-thickness"};
