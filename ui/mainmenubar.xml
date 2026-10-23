@@ -625,6 +625,11 @@
       <attribute name="action">win.tool-draw-spline</attribute>
       <attribute name="accel">&lt;Ctrl&gt;8</attribute>
      </item>
+     <item>
+      <attribute name="label" translatable="yes">Draw Arc</attribute>
+      <attribute name="action">win.tool-draw-arc</attribute>
+      <attribute name="accel">&lt;Ctrl&gt;0</attribute>
+     </item>
      <submenu>
       <attribute name="label" translatable="yes">Arrowheads</attribute>
       <section>
@@ -694,6 +699,29 @@
         <item>
          <attribute name="label" translatable="yes">Arrowheads at Both Ends</attribute>
          <attribute name="action">win.tool-arrowheads-coordinate-system</attribute>
+         <attribute name="target">both</attribute>
+        </item>
+       </submenu>
+       <submenu>
+        <attribute name="label" translatable="yes">Arc</attribute>
+        <item>
+         <attribute name="label" translatable="yes">No Arrowheads</attribute>
+         <attribute name="action">win.tool-arrowheads-arc</attribute>
+         <attribute name="target">none</attribute>
+        </item>
+        <item>
+         <attribute name="label" translatable="yes">Arrowhead at Start</attribute>
+         <attribute name="action">win.tool-arrowheads-arc</attribute>
+         <attribute name="target">start</attribute>
+        </item>
+        <item>
+         <attribute name="label" translatable="yes">Arrowhead at End</attribute>
+         <attribute name="action">win.tool-arrowheads-arc</attribute>
+         <attribute name="target">end</attribute>
+        </item>
+        <item>
+         <attribute name="label" translatable="yes">Arrowheads at Both Ends</attribute>
+         <attribute name="action">win.tool-arrowheads-arc</attribute>
          <attribute name="target">both</attribute>
         </item>
        </submenu>

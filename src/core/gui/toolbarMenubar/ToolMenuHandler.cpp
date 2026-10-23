@@ -436,6 +436,8 @@ void ToolMenuHandler::initToolItems() {
                                    _("Draw Line"));
     emplaceShapeItemWithArrowheads("DRAW_SPLINE", Action::TOOL_DRAW_SPLINE, Action::TOOL_ARROWHEADS_SPLINE,
                                    "draw-spline", _("Draw Spline"));
+    emplaceShapeItemWithArrowheads("DRAW_ARC", Action::TOOL_DRAW_ARC, Action::TOOL_ARROWHEADS_ARC, "draw-arc",
+                                   _("Draw Arc"));
 
     emplaceCustomItemWithTarget("SELECT_REGION", Cat::SELECTION, Action::SELECT_TOOL, TOOL_SELECT_REGION,
                                 "select-lasso", _("Select Region"));

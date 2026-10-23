@@ -673,7 +673,7 @@ auto ToolHandler::isSinglePageTool() const -> bool {
             (drawingType == DRAWING_TYPE_ARROW || drawingType == DRAWING_TYPE_DOUBLE_ARROW ||
              drawingType == DRAWING_TYPE_ELLIPSE || drawingType == DRAWING_TYPE_COORDINATE_SYSTEM ||
              drawingType == DRAWING_TYPE_LINE || drawingType == DRAWING_TYPE_RECTANGLE ||
-             drawingType == DRAWING_TYPE_SPLINE)) ||
+             drawingType == DRAWING_TYPE_SPLINE || drawingType == DRAWING_TYPE_ARC)) ||
            toolType == TOOL_SELECT_RECT || toolType == TOOL_SELECT_REGION || toolType == TOOL_SELECT_MULTILAYER_RECT ||
            toolType == TOOL_SELECT_MULTILAYER_REGION || toolType == TOOL_SELECT_OBJECT || toolType == TOOL_DRAW_RECT ||
            toolType == TOOL_DRAW_ELLIPSE || toolType == TOOL_DRAW_COORDINATE_SYSTEM || toolType == TOOL_DRAW_ARROW ||
@@ -685,7 +685,8 @@ auto ToolHandler::acceptsOutOfPageEvents() const -> bool {
     ToolType toolType = this->getToolType();
     DrawingType drawingType = this->getDrawingType();
 
-    return ((toolType == TOOL_PEN || toolType == TOOL_HIGHLIGHTER) && (drawingType == DRAWING_TYPE_SPLINE)) ||
+    return ((toolType == TOOL_PEN || toolType == TOOL_HIGHLIGHTER) &&
+            (drawingType == DRAWING_TYPE_SPLINE || drawingType == DRAWING_TYPE_ARC)) ||
            (toolType == TOOL_DRAW_SPLINE);
 }
 

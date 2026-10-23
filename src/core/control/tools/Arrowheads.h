@@ -31,7 +31,8 @@ struct Shape {
 constexpr Shape SHAPES[] = {{DRAWING_TYPE_LINE, Action::TOOL_ARROWHEADS_LINE, "arrowheadsLine"},
                             {DRAWING_TYPE_SPLINE, Action::TOOL_ARROWHEADS_SPLINE, "arrowheadsSpline"},
                             {DRAWING_TYPE_COORDINATE_SYSTEM, Action::TOOL_ARROWHEADS_COORDINATE_SYSTEM,
-                             "arrowheadsCoordinateSystem"}};
+                             "arrowheadsCoordinateSystem"},
+                            {DRAWING_TYPE_ARC, Action::TOOL_ARROWHEADS_ARC, "arrowheadsArc"}};
 constexpr size_t SHAPE_COUNT = std::size(SHAPES);
 
 /// Index of the shape in SHAPES, or nullopt if this drawing type does not support arrowheads

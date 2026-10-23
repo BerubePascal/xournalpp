@@ -28,6 +28,7 @@
 #include "control/jobs/XournalScheduler.h"          // for XournalScheduler
 #include "control/layer/LayerController.h"          // for LayerControl
 #include "control/settings/Settings.h"              // for Settings
+#include "control/tools/ArcHandler.h"
 #include "control/tools/ArrowHandler.h"             // for ArrowHandler
 #include "control/tools/CoordinateSystemHandler.h"  // for CoordinateSystemH...
 #include "control/tools/EditSelection.h"            // for EditSelection
@@ -216,6 +217,10 @@ void XojPageView::endSpline() {
         h->finalizeSpline();
         xoj_assert(hasNoViewOf(overlayViews, inputHandler.get()));
         this->inputHandler.reset();
+    } else if (ArcHandler* a = dynamic_cast<ArcHandler*>(this->inputHandler.get()); a) {
+        a->cancel();  // An unfinished arc is abandoned
+        xoj_assert(hasNoViewOf(overlayViews, inputHandler.get()));
+        this->inputHandler.reset();
     }
 }
 
@@ -254,7 +259,7 @@ auto XojPageView::onButtonPressEvent(const PositionInputData& pos) -> bool {
     cursor->setMouseDown(true);
 
     if (((h->getToolType() == TOOL_PEN || h->getToolType() == TOOL_HIGHLIGHTER) &&
-         h->getDrawingType() != DRAWING_TYPE_SPLINE) ||
+         h->getDrawingType() != DRAWING_TYPE_SPLINE && h->getDrawingType() != DRAWING_TYPE_ARC) ||
         (h->getToolType() == TOOL_ERASER && h->getEraserType() == ERASER_TYPE_WHITEOUT)) {
 
         if (this->inputHandler) {
@@ -296,9 +301,14 @@ auto XojPageView::onButtonPressEvent(const PositionInputData& pos) -> bool {
         this->overlayViews.emplace_back(this->inputHandler->createView(this));
 
     } else if ((h->getToolType() == TOOL_PEN || h->getToolType() == TOOL_HIGHLIGHTER) &&
-               h->getDrawingType() == DRAWING_TYPE_SPLINE) {
+               (h->getDrawingType() == DRAWING_TYPE_SPLINE || h->getDrawingType() == DRAWING_TYPE_ARC)) {
+        // Shapes drawn with several clicks: the handler lives until the shape is finished
         if (!this->inputHandler) {
-            this->inputHandler = std::make_unique<SplineHandler>(this->xournal->getControl(), getPage());
+            if (h->getDrawingType() == DRAWING_TYPE_ARC) {
+                this->inputHandler = std::make_unique<ArcHandler>(this->xournal->getControl(), getPage());
+            } else {
+                this->inputHandler = std::make_unique<SplineHandler>(this->xournal->getControl(), getPage());
+            }
             this->inputHandler->onButtonPressEvent(pos, zoom);
             this->overlayViews.emplace_back(this->inputHandler->createView(this));
         } else {
@@ -693,8 +703,8 @@ auto XojPageView::onButtonReleaseEvent(const PositionInputData& pos) -> bool {
         this->inputHandler->onButtonReleaseEvent(pos, zoom);
 
         ToolHandler* h = control->getToolHandler();
-        bool isDrawingTypeSpline = h->getDrawingType() == DRAWING_TYPE_SPLINE;
-        if (!isDrawingTypeSpline || !this->inputHandler->getStroke()) {  // The Spline Tool finalizes drawing manually
+        bool isMultiClickShape = h->getDrawingType() == DRAWING_TYPE_SPLINE || h->getDrawingType() == DRAWING_TYPE_ARC;
+        if (!isMultiClickShape || !this->inputHandler->getStroke()) {  // The Spline/Arc Tools finalize drawing manually
             xoj_assert(hasNoViewOf(overlayViews, inputHandler.get()));
             this->inputHandler.reset();
         }
@@ -834,7 +844,8 @@ auto XojPageView::onKeyReleaseEvent(const KeyEvent& event) -> bool {
 
     if (this->inputHandler && this->inputHandler->onKeyReleaseEvent(event)) {
         DrawingType drawingType = this->xournal->getControl()->getToolHandler()->getDrawingType();
-        if (drawingType == DRAWING_TYPE_SPLINE) {  // Spline drawing has been finalized
+        if (drawingType == DRAWING_TYPE_SPLINE ||
+            (drawingType == DRAWING_TYPE_ARC && !this->inputHandler->getStroke())) {  // drawing has been finalized
             if (this->inputHandler) {
                 xoj_assert(hasNoViewOf(overlayViews, inputHandler.get()));
                 this->inputHandler.reset();

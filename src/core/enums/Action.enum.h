@@ -182,7 +182,11 @@ enum class Action : size_t {
     TOOL_ARROWHEADS_LINE,
     TOOL_ARROWHEADS_SPLINE,
     TOOL_ARROWHEADS_COORDINATE_SYSTEM,
+    TOOL_ARROWHEADS_ARC,
     TOOL_ARROWHEADS_CYCLE,  ///< Cycles the arrowhead mode of the current shape
+
+    // Arc tool
+    TOOL_DRAW_ARC,
 
     // Keep this last value
     ENUMERATOR_COUNT
