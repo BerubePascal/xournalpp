@@ -1200,6 +1200,13 @@ void Control::toolChanged() {
     this->actionDB->enableAction(Action::TOOL_DRAW_SPLINE, toolHandler->hasCapability(TOOL_CAP_SPLINE));
     this->actionDB->enableAction(Action::TOOL_DRAW_ARC, toolHandler->hasCapability(TOOL_CAP_SPLINE));
     this->actionDB->enableAction(Action::TOOL_DRAW_SHAPE_RECOGNIZER, toolHandler->hasCapability(TOOL_CAP_RECOGNIZER));
+    // Shapes are always available: choosing one with a tool that cannot draw them switches to the pen
+    // (see ActionPropDrawingTypes)
+    for (Action a: {Action::TOOL_DRAW_LINE, Action::TOOL_DRAW_RECTANGLE, Action::TOOL_DRAW_ELLIPSE,
+                    Action::TOOL_DRAW_ARROW, Action::TOOL_DRAW_DOUBLE_ARROW, Action::TOOL_DRAW_COORDINATE_SYSTEM,
+                    Action::TOOL_DRAW_SPLINE, Action::TOOL_DRAW_ARC, Action::TOOL_DRAW_SHAPE_RECOGNIZER}) {
+        this->actionDB->enableAction(a, true);
+    }
 
     DrawingType dt = toolHandler->getDrawingType();
     this->actionDB->setActionState(Action::TOOL_DRAW_LINE, dt == DRAWING_TYPE_LINE);

@@ -607,6 +607,12 @@ struct ActionPropDrawingTypes {
     }
     static void callback(GSimpleAction* ga, GVariant* p, Control* ctrl) {
         auto* actionDB = ctrl->getActionDatabase();
+        bool enabled = g_variant_get_boolean(p);
+
+        if (enabled && !ctrl->getToolHandler()->hasCapability(TOOL_CAP_RULER)) {
+            // The current tool cannot draw shapes (e.g. eraser, selection): switch to the pen first
+            ctrl->selectTool(TOOL_PEN);
+        }
 
         actionDB->setActionState(Action::TOOL_DRAW_SHAPE_RECOGNIZER, false);
         actionDB->setActionState(Action::TOOL_DRAW_RECTANGLE, false);
@@ -619,7 +625,6 @@ struct ActionPropDrawingTypes {
         actionDB->setActionState(Action::TOOL_DRAW_ARC, false);
 
         g_simple_action_set_state(ga, p);
-        bool enabled = g_variant_get_boolean(p);
 
         ctrl->setToolDrawingType(enabled ? type : DRAWING_TYPE_DEFAULT);
     }
