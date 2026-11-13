@@ -99,6 +99,25 @@ merging official updates:
 
 ---
 
+## Updates from official Xournal++
+
+Log of each time official changes were merged into the fork. Most recent first.
+
+### 2026-11-10 — branch `master`
+- Merged 13 commits from official `xournalpp/master` (up to `4d6810b37`), to stay current with
+  official fixes. No conflicts; all fork modifications kept. Build checked on Windows.
+- What came in: native Windows dialogs for opening, saving and exporting files (and a new folder
+  selector in Settings); selection cursor now shows when using a selection outside the page;
+  fix for a crash when opening the Page Template dialog with unusual backgrounds; fixes for
+  clipboard paste, a broken saved zoom value, and audio setup errors; Windows package fix for
+  image-loading DLLs; macOS build update.
+- Files changed by both the fork and the merge (combined automatically by git):
+  `control/Control.cpp`, `control/Control.h`, `gui/XournalppCursor.cpp`.
+- Other files: mostly `gui/dialog/*` (file dialogs, export, settings), `control/jobs/*` (export),
+  `control/ClipboardHandler.*`, `gui/inputdevices/PenInputHandler.cpp`, `mac-setup/`.
+
+---
+
 ## Updating from official Xournal++
 
 The official repository is the `xournalpp` remote; this fork is `origin`.
