@@ -41,6 +41,9 @@ protected:
 
     GtkWidget* getNewToolIcon() const override;
 
+    /// Called on each button made by createItem() (whose child is the icon image), e.g. to update the icon later
+    virtual void onButtonCreated(GtkWidget* btn) {}
+
 protected:
     std::string iconName;
     std::string description;

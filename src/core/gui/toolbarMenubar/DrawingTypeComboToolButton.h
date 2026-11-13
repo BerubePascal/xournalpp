@@ -37,6 +37,7 @@ public:
         Action action = Action::ENUMERATOR_COUNT;
         ActionRef gAction;
         std::string fullActionName;
+        ActionRef arrowheadsAction;  ///< For shapes with arrowheads: the action holding their mode (else null)
     };
     DrawingTypeComboToolButton(std::string id, IconNameHelper& icons, const ActionDatabase& db);
 

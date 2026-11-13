@@ -39,6 +39,7 @@ auto ToolButton::createItem(bool horizontal) -> xoj::util::WidgetSPtr {
         gtk_actionable_set_action_target_value(GTK_ACTIONABLE(btn), target.get());
         xoj::util::gtk::setToggleButtonUnreleasable(GTK_TOGGLE_BUTTON(btn));
     }
+    onButtonCreated(btn);
 
     // For the sake of deprecated GtkToolbar, wrap the button in a GtkToolItem
     // Todo(gtk4): remove

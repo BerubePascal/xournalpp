@@ -82,6 +82,11 @@ static auto makeEntries(IconNameHelper& icons, const ActionDatabase& db)
             Entry(_("Draw Center of Mass"), icons.iconName("draw-mass-center"), db, Action::TOOL_DRAW_MASS_CENTER);
     entries[Type::SHAPE_RECOGNIZER] =
             Entry(_("Stroke recognizer"), icons.iconName("shape-recognizer"), db, Action::TOOL_DRAW_SHAPE_RECOGNIZER);
+    for (size_t n = 0; n < xoj::to_underlying(Type::ENUMERATOR_COUNT); n++) {
+        if (auto a = arrowheadsActionFor(static_cast<Type>(n))) {
+            entries[static_cast<Type>(n)].arrowheadsAction = db.getAction(*a);
+        }
+    }
     return res;
 }
 
@@ -107,12 +112,28 @@ struct Data {
     std::shared_ptr<const EnumIndexedArray<DrawingTypeComboToolButton::Entry, DrawingTypeComboToolButton::Type>>
             entries;
 
+    /// Icon of the entry, with its current arrowheads
+    static std::string iconOf(const DrawingTypeComboToolButton::Entry& e) {
+        return arrowheadIconName(e.icon, e.arrowheadsAction.get());
+    }
+
+    /// The arrowheads of a shape changed: update the prominent icon if it shows that shape
+    static void arrowheadsChangedCallback(GObject*, GParamSpec*, Data* self) {
+        for (const auto& e: *self->entries) {
+            xoj::util::GVariantSPtr state(g_action_get_state(G_ACTION(e.gAction.get())), xoj::util::adopt);
+            if (getGVariantValue<bool>(state.get())) {
+                gtk_button_set_icon_name(self->button, iconOf(e).c_str());
+                return;
+            }
+        }
+    }
+
     template <DrawingTypeComboToolButton::Type s>
     static void setProminentIconCallback(GObject* action, GParamSpec*, Data* self) {
         xoj::util::GVariantSPtr state(g_action_get_state(G_ACTION(action)), xoj::util::adopt);
         if (getGVariantValue<bool>(state.get())) {
             auto& e = (*self->entries)[s];
-            gtk_button_set_icon_name(self->button, e.icon.c_str());
+            gtk_button_set_icon_name(self->button, iconOf(e).c_str());
             gtk_widget_set_tooltip_text(GTK_WIDGET(self->button), e.name.c_str());
             gtk_actionable_set_action_name(GTK_ACTIONABLE(self->button), e.fullActionName.c_str());
         }
@@ -153,8 +174,8 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
             gtk_menu_button_set_direction(subButton, GTK_ARROW_RIGHT);
             if (arrowheadsAction) {
                 gtk_widget_set_tooltip_text(GTK_WIDGET(subButton), _("Arrowheads"));
-                gtk_menu_button_set_popover(subButton,
-                                            ArrowheadPopoverFactory(t.gAction, *arrowheadsAction).createPopover());
+                gtk_menu_button_set_popover(
+                        subButton, ArrowheadPopoverFactory(t.gAction, *arrowheadsAction, t.icon).createPopover());
             } else {
                 std::vector<ShapeVariantsPopoverFactory::Variant> vs;
                 for (Type v: variants) {
@@ -184,7 +205,7 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
         });
         const Entry& e = it == entries->end() ? (*entries)[Type::RECTANGLE] : *it;  // Select an entry by default
         gtk_actionable_set_action_name(GTK_ACTIONABLE(btn), e.fullActionName.data());
-        gtk_button_set_icon_name(GTK_BUTTON(btn), e.icon.c_str());
+        gtk_button_set_icon_name(GTK_BUTTON(btn), Data::iconOf(e).c_str());
         gtk_widget_set_tooltip_text(btn, e.name.c_str());
     }
 
@@ -226,6 +247,13 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
                      xoj::util::wrap_for_g_callback_v<Data::setProminentIconCallback<Type::SHAPE_RECOGNIZER>>,
                      data.get());
 
+    for (const auto& e: *entries) {
+        if (e.arrowheadsAction) {
+            g_signal_connect(e.arrowheadsAction.get(), "notify::state",
+                             xoj::util::wrap_for_g_callback_v<Data::arrowheadsChangedCallback>, data.get());
+        }
+    }
+
     // Disconnect the signal and destroy *data if the widget is destroyed
     g_object_weak_ref(
             G_OBJECT(item.get()),
@@ -241,6 +269,11 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
                 g_signal_handlers_disconnect_by_data((*data->entries)[Type::ARC].gAction.get(), d);
                 g_signal_handlers_disconnect_by_data((*data->entries)[Type::MASS_CENTER].gAction.get(), d);
                 g_signal_handlers_disconnect_by_data((*data->entries)[Type::SHAPE_RECOGNIZER].gAction.get(), d);
+                for (const auto& e: *data->entries) {
+                    if (e.arrowheadsAction) {
+                        g_signal_handlers_disconnect_by_data(e.arrowheadsAction.get(), d);
+                    }
+                }
                 delete data;
             },
             data.release());

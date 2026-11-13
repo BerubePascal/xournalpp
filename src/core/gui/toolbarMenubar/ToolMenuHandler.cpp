@@ -38,6 +38,7 @@
 #include "SpacerItem.h"
 #include "StylePopoverFactory.h"     // for ToolButtonWithStylePopover
 #include "ArrowheadPopoverFactory.h"      // for ArrowheadPopoverFactory
+#include "ShapeToolButton.h"              // for ShapeToolButton
 #include "ShapeVariantsPopoverFactory.h"  // for ShapeVariantsPopoverFactory
 #include "ToolThicknessSlider.h"      // for ToolThicknessSlider
 #include "ToolButton.h"              // for ToolButton
@@ -423,8 +424,14 @@ void ToolMenuHandler::initToolItems() {
                 std::vector<ShapeVariantsPopoverFactory::Variant>{
                         {Action::TOOL_DRAW_ELLIPSE, iconName("draw-ellipse"), _("Draw Ellipse")},
                         {Action::TOOL_DRAW_MASS_CENTER, iconName("draw-mass-center"), _("Draw Center of Mass")}}));
-        auto&& tb = emplaceItem<ToolButton>("DRAW_ELLIPSE", Cat::TOOLS, Action::TOOL_DRAW_ELLIPSE,
-                                            iconName("draw-ellipse"), _("Draw Ellipse"), true);
+        // The button shows the variant chosen last, and selects it
+        auto&& tb = emplaceItem<ShapeToolButton>(
+                "DRAW_ELLIPSE", Cat::TOOLS, Action::TOOL_DRAW_ELLIPSE, iconName("draw-ellipse"), _("Draw Ellipse"),
+                *this->control->getActionDatabase(),
+                std::vector<std::pair<Action, std::string>>{
+                        {Action::TOOL_DRAW_ELLIPSE, iconName("draw-ellipse")},
+                        {Action::TOOL_DRAW_MASS_CENTER, iconName("draw-mass-center")}},
+                std::nullopt);
         tb.setPopoverFactory(popover.get());
         tb.setPopoverButtonAlwaysBeside(true);
     }
@@ -435,8 +442,11 @@ void ToolMenuHandler::initToolItems() {
     auto emplaceShapeItemWithArrowheads = [this](const char* name, Action action, Action arrowheadsAction,
                                                  const char* icon, std::string description) {
         auto&& popover = this->arrowheadPopovers.emplace_back(std::make_unique<ArrowheadPopoverFactory>(
-                this->control->getActionDatabase()->getAction(action), arrowheadsAction));
-        auto&& tb = emplaceItem<ToolButton>(name, Cat::TOOLS, action, iconName(icon), description, true);
+                this->control->getActionDatabase()->getAction(action), arrowheadsAction, iconName(icon)));
+        // The button shows the shape with its current arrowheads
+        auto&& tb = emplaceItem<ShapeToolButton>(name, Cat::TOOLS, action, iconName(icon), description,
+                                                 *this->control->getActionDatabase(),
+                                                 std::vector<std::pair<Action, std::string>>{}, arrowheadsAction);
         tb.setPopoverFactory(popover.get());
         tb.setPopoverButtonAlwaysBeside(true);
     };

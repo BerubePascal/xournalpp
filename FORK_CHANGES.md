@@ -13,6 +13,19 @@ version open in official Xournal++; fork-only extras (e.g. the margin line) are 
 
 Most recent first. Each line in the "Files" sections is relative to `src/core/` unless noted.
 
+### Shape icons follow the current choice
+- The **separate shape buttons** show what they will draw: the Ellipse button shows the ellipse or the
+  center of mass (whichever was chosen last; clicking selects it), and the Line, Arc, Coordinate system
+  and Spline buttons show their **current arrowheads**. The Draw drop-down's main button does the same.
+- The arrowhead menus (▸ in the Draw drop-down, ▾ beside the buttons) are now **icons**, stacked, with
+  a tooltip; the current choice looks pressed.
+- New icons (only the **Color dark** theme for now; other themes fall back to the plain icons):
+  `xopp-draw-{line,arc,coordinate-system,spline}-{start,end,both}.svg`. The Arc and Spline icons lost
+  their red dots, and the center-of-mass icon got the grey border of the others.
+- Files: `gui/toolbarMenubar/ShapeToolButton.*` (new), `gui/toolbarMenubar/ToolButton.*`,
+  `gui/toolbarMenubar/ArrowheadPopoverFactory.*`, `gui/toolbarMenubar/DrawingTypeComboToolButton.*`,
+  `gui/toolbarMenubar/ToolMenuHandler.cpp`, `ui/iconsColor-dark/hicolor/scalable/actions/` (repo root)
+
 ### Center-of-mass symbol
 - New shape **Draw Center of Mass**: press at the **center**, drag out to the **radius**, release.
   Grid snapping.
