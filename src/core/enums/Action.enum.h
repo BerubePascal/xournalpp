@@ -192,6 +192,8 @@ enum class Action : size_t {
 
     BACKGROUND_SPACING,  ///< Opens the dialog to change the spacing of the page background
 
+    TOOL_DRAW_MASS_CENTER,  ///< Center-of-mass symbol tool
+
     // Keep this last value
     ENUMERATOR_COUNT
 };

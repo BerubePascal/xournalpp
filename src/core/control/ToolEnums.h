@@ -53,11 +53,12 @@ enum DrawingType {
     DRAWING_TYPE_COORDINATE_SYSTEM,
     DRAWING_TYPE_SHAPE_RECOGNIZER,
     DRAWING_TYPE_SPLINE,
-    DRAWING_TYPE_ARC
+    DRAWING_TYPE_ARC,
+    DRAWING_TYPE_MASS_CENTER
 };
-static constexpr std::array<std::string_view, 11> drawingTypeNames{
-        "dontChange",           "default",          "line",  "rectangle", "ellipse", "arrow", "doubleArrow",
-        "drawCoordinateSystem", "strokeRecognizer", "spline",      "arc"};
+static constexpr std::array<std::string_view, 12> drawingTypeNames{
+        "dontChange",           "default",          "line",   "rectangle", "ellipse", "arrow", "doubleArrow",
+        "drawCoordinateSystem", "strokeRecognizer", "spline", "arc",       "massCenter"};
 
 static constexpr std::string_view drawingTypeToString(DrawingType type) {
     return drawingTypeNames.at(static_cast<size_t>(type));

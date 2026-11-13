@@ -22,6 +22,7 @@
 #include "undo/UndoRedoHandler.h"                  // for UndoRedoHandler
 #include "util/Assert.h"                           // for xoj_assert
 #include "util/DispatchPool.h"                     // for DispatchPool
+#include "view/StrokeViewHelper.h"                 // for pathToCairo
 #include "view/overlays/ShapeToolView.h"           // for ShapeToolView
 
 
@@ -178,6 +179,8 @@ void BaseShapeHandler::modifyModifiersByDrawDir(double width, double height, dou
 }
 
 auto BaseShapeHandler::getShape() const -> const std::vector<Point>& { return this->shape; }
+
+void BaseShapeHandler::addPreviewPath(cairo_t* cr) const { xoj::view::StrokeViewHelper::pathToCairo(cr, this->shape); }
 
 auto BaseShapeHandler::createView(xoj::view::Repaintable* parent) const -> std::unique_ptr<xoj::view::OverlayView> {
     return std::make_unique<xoj::view::ShapeToolView>(this, parent);

@@ -37,7 +37,8 @@
 #include "SeparatorItem.h"
 #include "SpacerItem.h"
 #include "StylePopoverFactory.h"     // for ToolButtonWithStylePopover
-#include "ArrowheadPopoverFactory.h"  // for ArrowheadPopoverFactory
+#include "ArrowheadPopoverFactory.h"      // for ArrowheadPopoverFactory
+#include "ShapeVariantsPopoverFactory.h"  // for ShapeVariantsPopoverFactory
 #include "ToolThicknessSlider.h"      // for ToolThicknessSlider
 #include "ToolButton.h"              // for ToolButton
 #include "ToolPageLayer.h"           // for ToolPageLayer
@@ -417,7 +418,16 @@ void ToolMenuHandler::initToolItems() {
     emplaceCustomItemTgl("SHAPE_RECOGNIZER", Cat::TOOLS, Action::TOOL_DRAW_SHAPE_RECOGNIZER, "shape-recognizer",
                          _("Shape Recognizer"));
     emplaceCustomItemTgl("DRAW_RECTANGLE", Cat::TOOLS, Action::TOOL_DRAW_RECTANGLE, "draw-rect", _("Draw Rectangle"));
-    emplaceCustomItemTgl("DRAW_ELLIPSE", Cat::TOOLS, Action::TOOL_DRAW_ELLIPSE, "draw-ellipse", _("Draw Ellipse"));
+    {  // Ellipse: its ▾ opens its variants (ellipse, center of mass) as icons, beside it like the arrowhead menus
+        auto&& popover = this->shapeVariantsPopovers.emplace_back(std::make_unique<ShapeVariantsPopoverFactory>(
+                std::vector<ShapeVariantsPopoverFactory::Variant>{
+                        {Action::TOOL_DRAW_ELLIPSE, iconName("draw-ellipse"), _("Draw Ellipse")},
+                        {Action::TOOL_DRAW_MASS_CENTER, iconName("draw-mass-center"), _("Draw Center of Mass")}}));
+        auto&& tb = emplaceItem<ToolButton>("DRAW_ELLIPSE", Cat::TOOLS, Action::TOOL_DRAW_ELLIPSE,
+                                            iconName("draw-ellipse"), _("Draw Ellipse"), true);
+        tb.setPopoverFactory(popover.get());
+        tb.setPopoverButtonAlwaysBeside(true);
+    }
     emplaceCustomItemTgl("DRAW_ARROW", Cat::TOOLS, Action::TOOL_DRAW_ARROW, "draw-arrow", _("Draw Arrow"));
     emplaceCustomItemTgl("DRAW_DOUBLE_ARROW", Cat::TOOLS, Action::TOOL_DRAW_DOUBLE_ARROW, "draw-double-arrow",
                          _("Draw Double Arrow"));
@@ -439,6 +449,8 @@ void ToolMenuHandler::initToolItems() {
                                    "draw-spline", _("Draw Spline"));
     emplaceShapeItemWithArrowheads("DRAW_ARC", Action::TOOL_DRAW_ARC, Action::TOOL_ARROWHEADS_ARC, "draw-arc",
                                    _("Draw Arc"));
+    emplaceCustomItemTgl("DRAW_MASS_CENTER", Cat::TOOLS, Action::TOOL_DRAW_MASS_CENTER, "draw-mass-center",
+                         _("Draw Center of Mass"));
 
     emplaceCustomItemWithTarget("SELECT_REGION", Cat::SELECTION, Action::SELECT_TOOL, TOOL_SELECT_REGION,
                                 "select-lasso", _("Select Region"));

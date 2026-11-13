@@ -28,7 +28,7 @@ void ShapeToolView::draw(cairo_t* cr) const {
 
     cairo_t* effCr = this->prepareContext(cr);
 
-    StrokeViewHelper::pathToCairo(effCr, pts);
+    this->toolHandler->addPreviewPath(effCr);
 
     this->commitDrawing(cr);
 }

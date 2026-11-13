@@ -64,6 +64,12 @@ public:
      */
     const std::vector<Point>& getShape() const;
 
+    /**
+     * @brief Add the preview of the shape to the cairo path (filled and stroked by ShapeToolView).
+     *      Default: the shape's points as one polyline.
+     */
+    virtual void addPreviewPath(cairo_t* cr) const;
+
 private:
     /**
      * @brief Create the shape (to be drawn and added as a stroke), depending on the last event in
@@ -84,14 +90,14 @@ private:
      */
     void updateShape(bool isAltDown, bool isShiftDown, bool isControlDown);
 
+    bool onKeyEvent(const KeyEvent& event, bool pressed);
+
+protected:
     /**
      * @brief Cancel the current shape creation: clears all data and wipes any drawing made
      */
     void cancelStroke();
 
-    bool onKeyEvent(const KeyEvent& event, bool pressed);
-
-protected:
     /**
      * modifyModifiersByDrawDir
      * @brief 	Toggle shift and control modifiers depending on initial drawing direction.

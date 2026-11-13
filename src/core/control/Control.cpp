@@ -1213,7 +1213,8 @@ void Control::toolChanged() {
     // (see ActionPropDrawingTypes)
     for (Action a: {Action::TOOL_DRAW_LINE, Action::TOOL_DRAW_RECTANGLE, Action::TOOL_DRAW_ELLIPSE,
                     Action::TOOL_DRAW_ARROW, Action::TOOL_DRAW_DOUBLE_ARROW, Action::TOOL_DRAW_COORDINATE_SYSTEM,
-                    Action::TOOL_DRAW_SPLINE, Action::TOOL_DRAW_ARC, Action::TOOL_DRAW_SHAPE_RECOGNIZER}) {
+                    Action::TOOL_DRAW_SPLINE, Action::TOOL_DRAW_ARC, Action::TOOL_DRAW_MASS_CENTER,
+                    Action::TOOL_DRAW_SHAPE_RECOGNIZER}) {
         this->actionDB->enableAction(a, true);
     }
 
@@ -1226,6 +1227,7 @@ void Control::toolChanged() {
     this->actionDB->setActionState(Action::TOOL_DRAW_COORDINATE_SYSTEM, dt == DRAWING_TYPE_COORDINATE_SYSTEM);
     this->actionDB->setActionState(Action::TOOL_DRAW_SPLINE, dt == DRAWING_TYPE_SPLINE);
     this->actionDB->setActionState(Action::TOOL_DRAW_ARC, dt == DRAWING_TYPE_ARC);
+    this->actionDB->setActionState(Action::TOOL_DRAW_MASS_CENTER, dt == DRAWING_TYPE_MASS_CENTER);
     this->actionDB->setActionState(Action::TOOL_DRAW_SHAPE_RECOGNIZER, dt == DRAWING_TYPE_SHAPE_RECOGNIZER);
 
     bool enableSize = toolHandler->hasCapability(TOOL_CAP_SIZE);

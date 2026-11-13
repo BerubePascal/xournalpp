@@ -34,6 +34,7 @@ public:
         Entry(std::string name, std::string icon, const ActionDatabase& db, Action a);
         std::string name;
         std::string icon;
+        Action action = Action::ENUMERATOR_COUNT;
         ActionRef gAction;
         std::string fullActionName;
     };
@@ -53,6 +54,7 @@ public:
         COORDINATE_SYSTEM,
         SPLINE,
         ARC,
+        MASS_CENTER,
         SHAPE_RECOGNIZER,
         ENUMERATOR_COUNT
     };

@@ -12,7 +12,8 @@
 #include "util/gtk4_helper.h"  // for gtk_popover_new
 #include "util/i18n.h"
 
-#include "ArrowheadPopoverFactory.h"  // for ArrowheadPopoverFactory
+#include "ArrowheadPopoverFactory.h"      // for ArrowheadPopoverFactory
+#include "ShapeVariantsPopoverFactory.h"  // for ShapeVariantsPopoverFactory
 
 /// Returns a floating ref
 static GtkWidget* createPopoverEntry(const DrawingTypeComboToolButton::Entry& e) {
@@ -45,6 +46,22 @@ static auto arrowheadsActionFor(DrawingTypeComboToolButton::Type t) -> std::opti
     }
 }
 
+/// The variants of the shape, shown in a submenu of its entry (empty if it has none)
+static auto variantsFor(DrawingTypeComboToolButton::Type t) -> std::vector<DrawingTypeComboToolButton::Type> {
+    using Type = DrawingTypeComboToolButton::Type;
+    switch (t) {
+        case Type::ELLIPSE:
+            return {Type::ELLIPSE, Type::MASS_CENTER};
+        default:
+            return {};
+    }
+}
+
+/// Shapes only listed in the submenu of another shape (see variantsFor())
+static bool isVariantOnly(DrawingTypeComboToolButton::Type t) {
+    return t == DrawingTypeComboToolButton::Type::MASS_CENTER;
+}
+
 static auto makeEntries(IconNameHelper& icons, const ActionDatabase& db)
         -> std::shared_ptr<EnumIndexedArray<DrawingTypeComboToolButton::Entry, DrawingTypeComboToolButton::Type>> {
     using Type = DrawingTypeComboToolButton::Type;
@@ -61,6 +78,8 @@ static auto makeEntries(IconNameHelper& icons, const ActionDatabase& db)
                                              Action::TOOL_DRAW_COORDINATE_SYSTEM);
     entries[Type::SPLINE] = Entry(_("Draw Spline"), icons.iconName("draw-spline"), db, Action::TOOL_DRAW_SPLINE);
     entries[Type::ARC] = Entry(_("Draw Arc"), icons.iconName("draw-arc"), db, Action::TOOL_DRAW_ARC);
+    entries[Type::MASS_CENTER] =
+            Entry(_("Draw Center of Mass"), icons.iconName("draw-mass-center"), db, Action::TOOL_DRAW_MASS_CENTER);
     entries[Type::SHAPE_RECOGNIZER] =
             Entry(_("Stroke recognizer"), icons.iconName("shape-recognizer"), db, Action::TOOL_DRAW_SHAPE_RECOGNIZER);
     return res;
@@ -69,6 +88,7 @@ static auto makeEntries(IconNameHelper& icons, const ActionDatabase& db)
 DrawingTypeComboToolButton::Entry::Entry(std::string name, std::string icon, const ActionDatabase& db, Action a):
         name(std::move(name)),
         icon(std::move(icon)),
+        action(a),
         gAction(db.getAction(a)),
         fullActionName(std::string("win.") + g_action_get_name(G_ACTION(gAction.get()))) {}
 
@@ -112,24 +132,39 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
 
         for (size_t n = 0; n < xoj::to_underlying(Type::ENUMERATOR_COUNT); n++) {
             const Entry& t = (*this->entries)[static_cast<Type>(n)];
+            if (isVariantOnly(static_cast<Type>(n))) {
+                continue;
+            }
             std::optional<Action> arrowheadsAction = arrowheadsActionFor(static_cast<Type>(n));
-            if (!arrowheadsAction) {
+            std::vector<Type> variants = variantsFor(static_cast<Type>(n));
+            if (!arrowheadsAction && variants.empty()) {
                 gtk_box_append(box, createPopoverEntry(t));
                 continue;
             }
-            // Shapes with open ends: a ▸ on the right of the entry opens the shape's arrowhead choices
+            // A ▸ on the right of the entry opens the shape's arrowhead choices (shapes with open ends)
+            // or its variants (e.g. ellipse / center of mass)
             GtkBox* row = GTK_BOX(gtk_box_new(GTK_ORIENTATION_HORIZONTAL, 0));
             GtkWidget* entry = createPopoverEntry(t);
             gtk_widget_set_hexpand(entry, true);
             gtk_box_append(row, entry);
 
-            GtkMenuButton* arrowheadsButton = GTK_MENU_BUTTON(gtk_menu_button_new());
-            gtk_widget_set_can_focus(GTK_WIDGET(arrowheadsButton), false);  // todo(gtk4) not necessary anymore
-            gtk_widget_set_tooltip_text(GTK_WIDGET(arrowheadsButton), _("Arrowheads"));
-            gtk_menu_button_set_direction(arrowheadsButton, GTK_ARROW_RIGHT);
-            gtk_menu_button_set_popover(arrowheadsButton,
-                                        ArrowheadPopoverFactory(t.gAction, *arrowheadsAction).createPopover());
-            gtk_box_append(row, GTK_WIDGET(arrowheadsButton));
+            GtkMenuButton* subButton = GTK_MENU_BUTTON(gtk_menu_button_new());
+            gtk_widget_set_can_focus(GTK_WIDGET(subButton), false);  // todo(gtk4) not necessary anymore
+            gtk_menu_button_set_direction(subButton, GTK_ARROW_RIGHT);
+            if (arrowheadsAction) {
+                gtk_widget_set_tooltip_text(GTK_WIDGET(subButton), _("Arrowheads"));
+                gtk_menu_button_set_popover(subButton,
+                                            ArrowheadPopoverFactory(t.gAction, *arrowheadsAction).createPopover());
+            } else {
+                std::vector<ShapeVariantsPopoverFactory::Variant> vs;
+                for (Type v: variants) {
+                    const Entry& ve = (*this->entries)[v];
+                    vs.push_back({ve.action, ve.icon, ve.name});
+                }
+                gtk_widget_set_tooltip_text(GTK_WIDGET(subButton), _("Variants"));
+                gtk_menu_button_set_popover(subButton, ShapeVariantsPopoverFactory(std::move(vs)).createPopover());
+            }
+            gtk_box_append(row, GTK_WIDGET(subButton));
 
             gtk_box_append(box, GTK_WIDGET(row));
         }
@@ -184,6 +219,9 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
                      xoj::util::wrap_for_g_callback_v<Data::setProminentIconCallback<Type::SPLINE>>, data.get());
     g_signal_connect((*entries)[Type::ARC].gAction.get(), "notify::state",
                      xoj::util::wrap_for_g_callback_v<Data::setProminentIconCallback<Type::ARC>>, data.get());
+    g_signal_connect((*entries)[Type::MASS_CENTER].gAction.get(), "notify::state",
+                     xoj::util::wrap_for_g_callback_v<Data::setProminentIconCallback<Type::MASS_CENTER>>,
+                     data.get());
     g_signal_connect((*entries)[Type::SHAPE_RECOGNIZER].gAction.get(), "notify::state",
                      xoj::util::wrap_for_g_callback_v<Data::setProminentIconCallback<Type::SHAPE_RECOGNIZER>>,
                      data.get());
@@ -201,6 +239,7 @@ auto DrawingTypeComboToolButton::createItem(bool horizontal) -> xoj::util::Widge
                 g_signal_handlers_disconnect_by_data((*data->entries)[Type::COORDINATE_SYSTEM].gAction.get(), d);
                 g_signal_handlers_disconnect_by_data((*data->entries)[Type::SPLINE].gAction.get(), d);
                 g_signal_handlers_disconnect_by_data((*data->entries)[Type::ARC].gAction.get(), d);
+                g_signal_handlers_disconnect_by_data((*data->entries)[Type::MASS_CENTER].gAction.get(), d);
                 g_signal_handlers_disconnect_by_data((*data->entries)[Type::SHAPE_RECOGNIZER].gAction.get(), d);
                 delete data;
             },

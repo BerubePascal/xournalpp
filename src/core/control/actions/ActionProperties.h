@@ -629,6 +629,7 @@ struct ActionPropDrawingTypes {
         actionDB->setActionState(Action::TOOL_DRAW_LINE, false);
         actionDB->setActionState(Action::TOOL_DRAW_SPLINE, false);
         actionDB->setActionState(Action::TOOL_DRAW_ARC, false);
+        actionDB->setActionState(Action::TOOL_DRAW_MASS_CENTER, false);
 
         g_simple_action_set_state(ga, p);
 
@@ -654,6 +655,8 @@ template <>
 struct ActionProperties<Action::TOOL_DRAW_SPLINE>: ActionPropDrawingTypes<DRAWING_TYPE_SPLINE> {};
 template <>
 struct ActionProperties<Action::TOOL_DRAW_ARC>: ActionPropDrawingTypes<DRAWING_TYPE_ARC> {};
+template <>
+struct ActionProperties<Action::TOOL_DRAW_MASS_CENTER>: ActionPropDrawingTypes<DRAWING_TYPE_MASS_CENTER> {};
 
 template <>
 struct ActionProperties<Action::SETSQUARE> {

@@ -13,6 +13,22 @@ version open in official Xournal++; fork-only extras (e.g. the margin line) are 
 
 Most recent first. Each line in the "Files" sections is relative to `src/core/` unless noted.
 
+### Center-of-mass symbol
+- New shape **Draw Center of Mass**: press at the **center**, drag out to the **radius**, release.
+  Grid snapping.
+- Found in the **▸ submenu of the Ellipse** row of the Draw drop-down, and in the **▾ beside the separate
+  Ellipse toolbar button**: both show the ellipse and the center of mass as icons.
+  Also in *Tools → Drawing Type*, and as its own toolbar button via *Customize toolbar*.
+- A circle split in four: **top-left and bottom-right quadrants filled** with the pen color, the other
+  two left transparent. Always a solid line, whatever the line style.
+- Added as two strokes (filled quadrants + circle) in **one undo step**; select both to move it.
+- New icon `xopp-draw-mass-center.svg` for the four icon themes (`ui/icons*/hicolor/scalable/actions/`).
+- Files: `control/tools/MassCenterHandler.*` (new), `control/tools/BaseShapeHandler.*` (preview hook),
+  `view/overlays/ShapeToolView.cpp`, `control/ToolEnums.h`, `control/ToolHandler.cpp`, `gui/PageView.cpp`,
+  `gui/dialog/ButtonConfigGui.cpp`, `gui/toolbarMenubar/DrawingTypeComboToolButton.*`,
+  `gui/toolbarMenubar/ToolMenuHandler.*`, `gui/toolbarMenubar/ShapeVariantsPopoverFactory.*` (new),
+  plus the *Shared changes* files below
+
 ### Background drop-down applies at once
 - In the toolbar's background drop-down (next to *Insert page*), choosing a **background, paper size
   or orientation applies it to the current page immediately** (and to new pages).

@@ -48,6 +48,7 @@ class PageType;
 struct Palette;
 class StylePopoverFactory;
 class ArrowheadPopoverFactory;
+class ShapeVariantsPopoverFactory;
 class Recolor;
 
 class ToolMenuHandler {
@@ -139,6 +140,7 @@ private:
     std::unique_ptr<StylePopoverFactory> penLineStylePopover;
     std::unique_ptr<StylePopoverFactory> eraserTypePopover;
     std::vector<std::unique_ptr<ArrowheadPopoverFactory>> arrowheadPopovers;
+    std::vector<std::unique_ptr<ShapeVariantsPopoverFactory>> shapeVariantsPopovers;
 
     xoj::util::GObjectSPtr<GSimpleAction> gAction;
 };
